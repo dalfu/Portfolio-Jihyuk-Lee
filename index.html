@@ -1,0 +1,792 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}img{max-width:100%}body{margin:0}</style>
+<title>Dr. Cha's Journey</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=Gowun+Batang:wght@400;700&display=swap">
+<style>
+/* Layout: one reading column; a four-stop media path on top, one scene in the middle, back/next at the bottom. Color is used only to tell the media apart. */
+/* Paper: bright drawing-paper ground, dark-gray ink, muted ink colors for the media. Always light; no dark mode. */
+:root {
+  --bg: #fbfbfc;
+  --surface: #ffffff;
+  --ink: #1b2030;
+  --sub: #5a6072;
+  --faint: #9aa0b0;
+  --rule: #e4e6ec;
+  --novel: #3d5a80;
+  --webtoon: #5f5482;
+  --drama: #14213d;
+  --drama-on: #ffffff;
+  --tint-novel: #e8edf3; --tint-webtoon: #ecebf2; --drama-fill: #14213d;
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .25 0 0 0 0 .22 0 0 0 0 .2 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --grain-op: 0;
+  --story: "Newsreader", "Gowun Batang", Georgia, serif;
+  --ui: "IBM Plex Sans", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--ui); font-size: 15px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 40px;
+}
+body::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0; background-image: var(--grain); opacity: var(--grain-op); }
+.wrap { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+
+.path { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.stop { display: flex; flex-direction: column; gap: 6px; font-size: 13.8px; color: var(--faint); min-width: 0; }
+.stop .bar { height: 4px; border-radius: 2px; background: var(--rule); }
+.stop .lab { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stop.seen .bar { background: var(--c); opacity: .35; }
+.stop.now .bar { background: var(--c); opacity: 1; }
+.stop.now .lab { color: var(--c); font-weight: 600; }
+.stop[data-m="novel"] { --c: var(--novel); }
+.stop[data-m="webtoon"] { --c: var(--webtoon); }
+.stop[data-m="drama"] { --c: var(--drama); }
+
+.scene { display: flex; flex-direction: column; gap: 22px; min-height: 360px; }
+.scene.enter { animation: rise .35s ease-out; }
+@keyframes rise { from { opacity: .4; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .scene.enter { animation: none; } }
+
+.eyebrow { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-size: 13px; color: var(--sub); }
+.eyebrow b { color: var(--c, var(--ink)); font-weight: 600; }
+.scene[data-m="novel"] { --c: var(--novel); }
+.scene[data-m="webtoon"] { --c: var(--webtoon); }
+.scene[data-m="drama"] { --c: var(--drama); }
+h1 { font-family: var(--story); font-weight: 700; font-size: clamp(24px, 5vw, 32px); line-height: 1.35; margin: 0; text-wrap: balance; }
+.story { font-family: var(--story); font-size: 18px; line-height: 1.95; display: flex; flex-direction: column; gap: 14px; max-width: 34em; }
+.story p { margin: 0; }
+
+.question { font-family: var(--story); font-weight: 700; font-size: clamp(22px, 4.6vw, 28px); line-height: 1.5; margin: 0; text-wrap: balance; }
+.choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.choice {
+  font: inherit; text-align: left; cursor: pointer; background: var(--surface); color: var(--ink);
+  border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px;
+}
+.choice:hover { border-color: var(--k); }
+.choice:focus-visible, .nav button:focus-visible, .links a:focus-visible { outline: 2px solid var(--k, var(--ink)); outline-offset: 2px; }
+.choice .ans { font-weight: 600; font-size: 17px; color: var(--k); }
+.choice .to { font-size: 13px; color: var(--sub); }
+.choice[data-m="novel"] { --k: var(--novel); }
+.choice[data-m="webtoon"] { --k: var(--webtoon); }
+.choice[data-m="drama"] { --k: var(--drama); }
+
+.section { display: flex; flex-direction: column; gap: 10px; }
+.section h2 { font-size: 13px; font-weight: 600; letter-spacing: .04em; color: var(--sub); margin: 0; }
+.traits { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 20px; }
+.traits li { padding: 10px 0; border-top: 1px solid var(--rule); display: flex; flex-direction: column; gap: 2px; }
+.traits li b { font-weight: 600; }
+.traits li span { color: var(--sub); font-size: 14px; }
+.synopsis { font-family: var(--story); font-size: 17px; line-height: 1.9; margin: 0; max-width: 34em; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { font-size: 12.5px; padding: 3px 10px; border-radius: 999px; border: 1px dashed var(--faint); color: var(--sub); }
+.links { display: flex; flex-wrap: wrap; gap: 8px; }
+.links a, .links span {
+  font-size: 14px; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--c); color: var(--c); text-decoration: none;
+}
+.links span { border-style: dashed; color: var(--faint); border-color: var(--rule); }
+.links a:hover { background: color-mix(in srgb, var(--c) 8%, transparent); }
+
+.meta { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0; font-size: 13px; color: var(--sub); }
+.meta div { display: flex; gap: 6px; }
+.meta dt { color: var(--faint); }
+.meta dd { margin: 0; color: var(--ink); }
+.logline { margin: 0; font-family: var(--story); font-size: 18px; line-height: 1.7; padding-left: 14px; border-left: 2px solid var(--c); }
+.synopsis + .synopsis { margin-top: 4px; }
+.more { align-self: flex-start; font: inherit; font-size: 14px; font-weight: 600; background: transparent; color: var(--c); border: 1px solid var(--c); border-radius: 999px; padding: 7px 18px; cursor: pointer; }
+.more:hover { background: color-mix(in srgb, var(--c) 8%, transparent); }
+.more:focus-visible { outline: 2px solid var(--c); outline-offset: 2px; }
+.cover { display: flex; flex-direction: column; gap: 24px; padding-block: 4px; }
+.cover-kicker { margin: 0; font-size: 12.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--sub); }
+.cover-title { margin: 0; font-family: var(--story); font-weight: 700; font-size: clamp(32px, 7vw, 46px); line-height: 1.15; display: flex; flex-direction: column; gap: 8px; text-wrap: balance; }
+.cover-title span { font-weight: 400; font-style: italic; font-size: clamp(19px, 4vw, 24px); color: var(--sub); }
+.cover-author { margin: 0; font-size: 18px; font-weight: 500; }
+.cover-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; font-size: 12.5px; color: var(--sub); padding-bottom: 12px; border-bottom: 1px solid var(--rule); }
+.cover-meta b { color: var(--ink); font-weight: 600; }
+.cover-lead { display: flex; flex-direction: column; gap: 14px; padding: 18px 0 4px; }
+.cover-works { background: var(--surface); color: var(--ink); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+.cover-works summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; }
+.cover-works summary::-webkit-details-marker { display: none; }
+.cover-works summary::after { content: "+"; font-size: 18px; line-height: 1; color: var(--sub); }
+.cover-works[open] summary::after { content: "−"; }
+.cover-works summary:focus-visible { outline: 2px solid var(--ink); outline-offset: -4px; }
+.cover-works h2 { margin: 0; font-size: 13px; font-weight: 500; letter-spacing: .02em; color: var(--sub); }
+.cover-works ol { list-style: none; margin: 0; padding: 0 8px 4px; }
+.cover-works li + li { border-top: 1px solid var(--rule); }
+.cover-work { width: 100%; font: inherit; text-align: left; cursor: pointer; background: transparent; color: var(--ink); border: 0; border-radius: 6px; padding: 10px 8px; display: grid; grid-template-columns: 7.5em minmax(0, 1fr) auto; align-items: baseline; gap: 10px; }
+.cover-work:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.cover-work:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
+.cover-work small { font-size: 12px; font-weight: 600; color: var(--c); }
+.cover-work b { font-family: var(--story); font-size: 15.5px; font-weight: 700; min-width: 0; }
+.cover-work span { font-size: 12px; color: var(--sub); white-space: nowrap; }
+.cover-overview { display: block; margin: 0 8px 12px; padding: 10px 8px 0; border-top: 1px solid var(--rule); width: calc(100% - 16px); text-align: left; font: inherit; font-size: 13px; font-weight: 600; background: none; border-left: 0; border-right: 0; border-bottom: 0; color: var(--ink); cursor: pointer; }
+.cover-overview:hover { text-decoration: underline; text-underline-offset: 3px; }
+.cover .cover-start { font-size: 17px; padding: 16px 30px; border-radius: 10px; }
+.cover .cover-works { margin-top: 28px; }
+.cover-works:not([open]) summary { padding-block: 10px; }
+@media (max-width: 520px) { .cover-work { grid-template-columns: minmax(0, 1fr) auto; } .cover-work small { grid-column: 1 / -1; } }
+.cover-rights { margin: 6px 0 0; padding-top: 14px; border-top: 1px solid var(--rule); font-size: 12.5px; line-height: 1.65; color: var(--sub); display: flex; flex-direction: column; gap: 4px; }
+.cover-note { margin: 0; font-family: var(--story); font-size: 18px; line-height: 1.75; max-width: 30em; }
+.cover-start { align-self: flex-start; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; background: var(--ink); color: var(--bg); border: 0; border-radius: 8px; padding: 12px 20px; }
+.cover-start:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.sum-sub { margin: 0; color: var(--sub); font-size: 15px; }
+.sum-wrap { overflow-x: auto; margin-inline: -4px; }
+.sum-svg { display: block; width: 100%; min-width: 560px; height: auto; }
+.sum-svg .s-band { font-family: var(--ui); font-size: 13px; font-weight: 600; }
+.sum-svg .s-title { font-family: var(--story); font-size: 16px; font-weight: 700; }
+.sum-svg .s-key { font-family: var(--ui); font-size: 11.5px; }
+.sum-svg .s-btxt { font-family: var(--ui); font-size: 11px; font-weight: 600; }
+.sum-svg .s-chip { font-family: var(--ui); font-size: 12.5px; font-weight: 600; }
+.sum-svg .s-dtitle { font-family: var(--story); font-size: 21px; font-weight: 700; }
+.sum-svg .s-dsub { font-family: var(--story); font-size: 13.5px; }
+.sum-svg .s-dkey { font-family: var(--ui); font-size: 11px; }
+.sum-svg .s-leg { font-family: var(--ui); font-size: 11px; }
+.sum-svg .s-card { cursor: pointer; }
+.sum-svg .s-card:hover > rect:first-child, .sum-svg .s-card:hover > circle { opacity: .92; }
+.sum-svg .s-card:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.sum-hint { display: none; margin: 0; font-size: 12px; color: var(--faint); }
+@media (max-width: 600px) { .sum-hint { display: block; } }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 30px; margin-bottom: -12px; }
+.topbtn, .topbar-slot a { display: inline-block; line-height: 1.5; font: inherit; font-size: 13px; line-height: 1.5; color: var(--sub); background: transparent; border: 1px solid var(--rule); border-radius: 999px; padding: 4px 12px; cursor: pointer; text-decoration: none; }
+.topbtn:hover, .topbar-slot a:hover { color: var(--ink); border-color: var(--sub); }
+.topbtn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.topbar-slot { margin-left: auto; }
+.end { align-items: flex-start; justify-content: center; }
+.end h1 { font-family: var(--story); }
+
+.nav { display: flex; justify-content: space-between; gap: 12px; border-top: 1px solid var(--rule); padding-top: 16px; }
+.nav button {
+  font: inherit; font-size: 14px; cursor: pointer; padding: 10px 16px; border-radius: 8px;
+  background: transparent; color: var(--ink); border: 1px solid var(--rule);
+}
+.nav .next { border-color: var(--ink); font-weight: 600; margin-left: auto; text-align: right; }
+.nav .next small { display: block; font-weight: 400; color: var(--sub); font-size: 12px; }
+
+@media (max-width: 520px) {
+  .choices, .traits { grid-template-columns: 1fr; }
+  .stop .lab { white-space: normal; overflow: visible; font-size: 12.65px; line-height: 1.35; }
+  .choice { padding: 14px 16px; }
+  .story { font-size: 17px; }
+}
+.viewer { position: fixed; inset: 0; z-index: 50; background: rgba(10, 12, 20, .72); display: flex; align-items: center; justify-content: center;
+  padding: max(12px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); }
+.viewer-box { background: var(--surface); width: min(980px, 100%); height: 100%; max-height: 92vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--rule); }
+.viewer-bar { display: flex; align-items: center; gap: 10px; padding: 10px 12px 10px 16px; border-bottom: 1px solid var(--rule); }
+.viewer-bar strong { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.viewer-bar a, .viewer-bar button { font: inherit; font-size: 13px; color: var(--ink); background: transparent; border: 1px solid var(--rule); border-radius: 8px; padding: 6px 12px; text-decoration: none; cursor: pointer; white-space: nowrap; }
+.viewer iframe { flex: 1; width: 100%; border: 0; background: var(--bg); }
+.viewer-note { font-size: 12px; color: var(--sub); padding: 8px 16px; border-top: 1px solid var(--rule); }
+body.viewer-open { overflow: hidden; }
+</style>
+
+<style>
+.story { font-size: 19px; line-height: 1.75; }
+.synopsis { font-size: 17.5px; line-height: 1.75; }
+.logline { font-size: 18.5px; line-height: 1.6; font-style: italic; }
+.question { line-height: 1.4; }
+.traits li span { font-size: 14px; }
+.han { font-family: "Gowun Batang", serif; }
+.bible-sec { display: flex; flex-direction: column; gap: 10px; padding-top: 18px; border-top: 1px solid var(--rule); }
+.bible-sec h2 { font-family: var(--story); font-size: 21px; font-weight: 600; letter-spacing: 0; color: var(--ink); margin: 0; display: flex; gap: 10px; align-items: baseline; }
+.bible-sec h2 .num { font-family: var(--ui); font-size: 13px; color: var(--faint); min-width: 1.6em; }
+.houses { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 4px 0; }
+.house { border: 1px solid var(--rule); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 2px; background: var(--surface); }
+.house .hj { font-family: "Gowun Batang", serif; font-size: 26px; line-height: 1.2; }
+.house b { font-weight: 600; font-size: 14px; }
+.house span { font-size: 13px; color: var(--sub); }
+.house.dalfu { border-color: var(--novel); }
+.house.dalfu .tagline { color: var(--novel); font-size: 12px; }
+.moons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 4px 0; }
+.moon-card { border: 1px solid var(--rule); border-radius: 10px; padding: 14px; display: flex; gap: 14px; align-items: center; background: var(--surface); }
+.moon { width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--ink); flex: none; }
+.moon.waxing { background: linear-gradient(90deg, transparent 50%, var(--ink) 50%); }
+.moon.waning { background: linear-gradient(90deg, var(--ink) 50%, transparent 50%); }
+.moon-card div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.moon-card b { font-weight: 600; }
+.moon-card span { font-size: 13.5px; color: var(--sub); }
+@media (max-width: 560px) { .houses { grid-template-columns: repeat(2, minmax(0, 1fr)); } .moons { grid-template-columns: 1fr; } }
+
+.cover-title { line-height: 1.1; }
+.cover-title span { line-height: 1.3; }
+.sum-svg .s-band { fill: var(--drama-on); }
+
+/* Full-window layout: content spans the browser width; long text keeps its own reading measure. */
+body { padding-left: max(16px, 15vw, env(safe-area-inset-left, 0px)); padding-right: max(16px, 15vw, env(safe-area-inset-right, 0px)); padding-block: 28px 32px; }
+.wrap { max-width: none; min-height: calc(100vh - 60px); }
+.scene { flex: 1; }
+.cover { flex: 1; }
+/* Cover fits one screen even with the work list open: spacing and title size follow the window height. */
+.cover-lead { gap: clamp(10px, 1.8vh, 30px); padding-top: clamp(8px, 1vh, 40px); }
+.cover-title { gap: clamp(10px, 1.6vh, 28px); font-size: min(clamp(40px, 7.5vw, 112px), 10.5vh); }
+.cover .cover-works { margin-top: 0; }
+/* Work pages (body.fit): everything on one screen, only the synopsis box scrolls. Small screens keep normal page scrolling. */
+@media (min-width: 700px) and (min-height: 600px) {
+  body.fit { height: 125vh; overflow-y: auto; }
+  body.fit .wrap { min-height: 100%; }
+}
+/* Work pages render at 80% (like Chrome zoom 80%). CSS zoom also shrinks vh/vw, so those are ×1.25 here to keep their share of the window. */
+body.fit { zoom: .8; padding-left: max(16px, 18.75vw, env(safe-area-inset-left, 0px)); padding-right: max(16px, 18.75vw, env(safe-area-inset-right, 0px)); }
+body.fit .wrap { min-height: calc(125vh - 60px); }
+body.fit .viewer-box { max-height: 115vh; }
+@media (min-width: 700px) and (min-height: 600px) {
+  body.fit .scene { min-height: 0; gap: 16px; }
+  body.fit .scene > * { flex-shrink: 0; }
+  body.fit .traits li { padding: 6px 0; }
+  body.fit .syn-scroll { flex: 1 1 0; min-height: var(--syn-min, 140px); }
+  body.fit .syn-body { flex: 1; min-height: 0; overflow-y: auto; padding-right: 14px; display: flex; flex-direction: column; gap: 10px; scrollbar-width: thin; scrollbar-color: var(--faint) transparent; }
+}
+/* Summary page: the diagram is centered and shrinks to the space left, so the page never scrolls on a normal screen. */
+.sum-wrap { margin-inline: auto; }
+@media (min-width: 700px) and (min-height: 600px) {
+  body.fit-summary { height: 100vh; overflow: hidden; }
+  body.fit-summary .wrap { height: 100%; min-height: 0; gap: 20px; }
+  body.fit-summary .scene { min-height: 0; gap: 12px; }
+  body.fit-summary .scene > * { flex-shrink: 0; }
+  body.fit-summary .sum-wrap { flex: 1 1 0; min-height: 0; max-width: none; width: 100%; margin: 0; overflow: hidden; display: flex; justify-content: center; }
+  body.fit-summary .sum-svg { width: auto; height: 100%; max-width: 100%; min-width: 0; transform: translateY(-10px) scale(1.1); }
+  body.fit-summary .sum-wrap { overflow: visible; }
+  body.fit-summary .nav { padding-top: 12px; }
+}
+/* House and moon cards: content centered in the card. */
+.house { align-items: center; text-align: center; }
+.moon-card { justify-content: center; }
+/* Appendix: one column at body.fit's 80% scale, with slightly tighter spacing. */
+@media (min-width: 1100px) and (min-height: 600px) {
+  body.fit-bible .bible-sec { padding-top: 12px; gap: 8px; }
+  body.fit-bible .bible-sec h2 { font-size: 19px; }
+  body.fit-bible .synopsis { font-size: 16px; line-height: 1.65; }
+  body.fit-bible .house { display: grid; grid-template-columns: auto auto; column-gap: 14px; row-gap: 0; align-items: center; align-content: center; padding: 10px 14px; }
+  body.fit-bible .house .hj { grid-row: 1 / span 3; font-size: 34px; line-height: 1; }
+  body.fit-bible .house b { font-size: 15.5px; }
+  body.fit-bible .house span:not(.hj) { font-size: 13.5px; }
+  body.fit-bible .moon-card b { font-size: 15px; }
+  body.fit-bible .moon-card span:not(.moon) { font-size: 14px; }
+  body.fit-bible .house { justify-content: center; }
+  body.fit-bible .moon-card { padding: 10px 12px; }
+  body.fit-bible .moon { width: 36px; height: 36px; }
+}
+/* The start button runs as wide as the line above it. */
+.cover-cta { display: flex; flex-direction: column; gap: inherit; width: fit-content; max-width: 100%; }
+.cover-cta .cover-start { align-self: stretch; text-align: center; }
+.cover-rights { margin-top: auto; text-align: center; align-items: center; }
+.cover-title span { font-size: clamp(19px, 2.2vw, 30px); }
+h1 { font-size: clamp(26px, 3.6vw, 48px); }
+.question { font-size: clamp(22px, 2.8vw, 36px); }
+.sum-wrap { max-width: 920px; }
+@media (min-width: 1100px) {
+  .traits { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .choices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Text spans the full width, justified on both sides. */
+.story, .synopsis, .logline, .cover-note, .sum-sub, h1, .question { max-width: none; }
+.story p, .synopsis, .logline, .cover-note { text-align: justify; word-break: keep-all; }
+/* Question scenes (opening, q2, q3): centered, No in dark gray and Yes in black. */
+body.on-start .story, body.on-start .story p, body.on-start .question { text-align: center; }
+body.on-start .choice { align-items: center; text-align: center; }
+body.on-start .scene, body.on-long .scene { justify-content: center; gap: 42px; }
+body.on-start .story, body.on-long .story { gap: 20px; }
+body.on-start .choice:first-child { --k: #555555; }
+body.on-start .choice:last-child { --k: #000000; }
+/* Phones (iPhone 17 Pro is 402px wide): normal side gutter, no 80% scale, left-aligned paragraphs (justify leaves gaps in a narrow column). */
+@media (max-width: 699px) {
+  body, body.fit { padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); padding-block: max(16px, env(safe-area-inset-top, 0px)) max(24px, env(safe-area-inset-bottom, 0px)); }
+  body.fit { zoom: 1; }
+  .wrap, body.fit .wrap { min-height: calc(100vh - 40px); min-height: calc(100dvh - 40px); gap: 22px; }
+  .story p, .synopsis, .logline, .cover-note { text-align: left; }
+  body.on-start .story p { text-align: center; }
+  .cover-meta { flex-direction: column; gap: 2px; }
+  .cover-cta { width: 100%; }
+  .cover-rights { font-size: 11.5px; }
+  h1 { font-size: 28px; }
+  .question { font-size: 23px; }
+  .story { font-size: 17.5px; }
+  .synopsis { font-size: 16.5px; }
+  .logline { font-size: 17px; }
+  body.on-start .scene, body.on-long .scene { gap: 28px; }
+  body.on-start .story, body.on-long .story { gap: 14px; }
+  .links a, .links span { font-size: 13.5px; }
+  .nav button { padding: 10px 14px; }
+  body.fit .viewer-box { max-height: 92vh; }
+  .path { gap: 10px; }
+  .sum-wrap { margin-inline: -20px; padding-inline: 20px; }
+}
+/* Cover, centered variant: title block centered and sitting midway between the top bar and the footer. */
+.cover-lead { margin-top: auto; align-items: center; text-align: center; }
+.cover-title { align-items: center; }
+.cover-cta { align-items: center; }
+.cover .cover-works { align-self: center; width: min(100%, 560px); }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar"><button type="button" id="home-btn" class="topbtn" aria-label="Go to the title page" hidden>⌂ Home</button><span class="topbar-slot"><a id="lang-switch" href="ko.html">Korean</a></span></div>
+  <nav class="path" aria-label="Media path of the journey">
+    <div class="stop" data-m="novel" data-k="short"><div class="bar"></div><div class="lab">Novel · Short Story</div></div>
+    <div class="stop" data-m="novel" data-k="long"><div class="bar"></div><div class="lab">Novel · Novella</div></div>
+    <div class="stop" data-m="webtoon" data-k="webtoon"><div class="bar"></div><div class="lab">Webtoon</div></div>
+    <div class="stop" data-m="drama" data-k="drama"><div class="bar"></div><div class="lab">Drama</div></div>
+  </nav>
+
+  <main id="scene" class="scene" aria-live="polite"></main>
+
+  <div class="nav" id="nav">
+    <button type="button" id="back">← Back</button>
+    <button type="button" class="next" id="next" hidden></button>
+  </div>
+</div>
+
+<div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="Document viewer" hidden>
+  <div class="viewer-box">
+    <div class="viewer-bar"><strong id="viewer-title"></strong><a id="viewer-open" href="#" target="_blank" rel="noopener">Open in new tab</a><button type="button" id="viewer-close">Close</button></div>
+    <iframe id="viewer-frame" title="Document viewer" allow="autoplay"></iframe>
+    <div class="viewer-note">If the file doesn’t load, use “Open in new tab”.</div>
+  </div>
+</div>
+
+<script>
+/* true on the hosted site: Drive files open in an in-page viewer */
+const USE_POPUP = true;
+/* true on the hosted site: episodes open from the bundled scroll viewer instead of Drive */
+const EPISODE_LOCAL = true;
+const EPISODE_LINKS = {
+  1: "https://drive.google.com/file/d/1QTqTyeMajmmrtSw_4N0QxQo9Gd8mghsr/view?usp=drive_link",
+  2: "https://drive.google.com/file/d/1BBfBu-GDjLLMLJrhYdzdPHCZIClvc51b/view?usp=drive_link",
+  3: "https://drive.google.com/file/d/1qIVlhEEAh3vnskhwp7V_ifsNNhxecoV6/view?usp=drive_link",
+};
+const A = (href, label) => `<a href="${href}" target="_blank" rel="noopener">${label}</a>`;
+
+const S = {
+
+  cover: {
+    stop: null, m: "",
+    html: `
+      <div class="cover">
+        <div class="cover-meta"><b>PhD Application Portfolio</b><span>USC Media Arts + Practice · 2027</span></div>
+        <div class="cover-lead">
+          <p class="cover-kicker">Transmedia Storytelling Portfolio</p>
+          <h1 class="cover-title">Doctor Half-Moon<span>The Savior Who Rises with the Moon</span></h1>
+          <p class="cover-author">Jihyuk Lee</p>
+          <div class="cover-cta"><p class="cover-note">This story follows Dr. Cha’s journey. Enjoy the story each medium has to tell.</p>
+          <button type="button" class="cover-start" data-go="start">Begin the journey →</button></div>
+        </div>
+        <details class="cover-works">
+          <summary><h2>Or go directly to a work</h2></summary>
+          <ol><li><button type="button" class="cover-work" data-go="short" style="--c:var(--novel)"><small>Short Story</small><b>The First Room</b><span>5,000 words</span></button></li><li><button type="button" class="cover-work" data-go="longInfo" style="--c:var(--novel)"><small>Novella</small><b>In Search of You</b><span>33,000 words</span></button></li><li><button type="button" class="cover-work" data-go="webtoonInfo" style="--c:var(--webtoon)"><small>Webtoon</small><b>Doctor Half-Moon</b><span>50 episodes</span></button></li><li><button type="button" class="cover-work" data-go="drama" style="--c:var(--drama)"><small>TV Drama</small><b>Doctor Half-Moon</b><span>10 × 50 min</span></button></li></ol>
+          <button type="button" class="cover-overview" data-go="summary">Overview: One Storyworld, Four Media →</button>
+        </details>
+        <div class="cover-rights"><span>This portfolio consists of original creative work by Jihyuk Lee, prepared for the 2027 PhD application to USC Media Arts + Practice. All copyrights belong to Jihyuk Lee.</span><span>© 2026 Jihyuk Lee. All rights reserved.</span></div>
+      </div>`,
+  },
+  start: {
+    stop: null,
+    html: `
+      <div class="story">
+        <p>Once upon a time, there was a young doctor in training who lost a patient she held dear.</p>
+        <p>Years later, now an oncologist, she is offered a chance.</p>
+        <p>This was a chance. A chance to meet that patient again.</p>
+        <p>Or rather, a chance to save a girl who carries that patient’s soul.</p>
+        <p>The girl’s name is Dalfu.</p>
+        <p>With a desperate wish to make, she has summoned this doctor from South Korea.</p>
+      </div>
+      <p class="question">If you were that doctor,<br>would you grant your patient’s wish?</p>
+      <div class="choices">
+        <button type="button" class="choice" data-m="novel" data-go="short"><span class="ans">No</span><span class="to">Stay in the short story <i>The First Room</i></span></button>
+        <button type="button" class="choice" data-m="novel" data-go="long"><span class="ans">Yes</span><span class="to">Go to the novella <i>In Search of You</i></span></button>
+      </div>`,
+  },
+
+  short: {
+    stop: "short", m: "novel",
+    html: `
+      <div class="eyebrow"><b>Novel · Short Story</b><span>Transmedia · The origin of the world</span></div>
+      <h1>The First Room</h1>
+      <dl class="meta"><div><dt>Type</dt><dd>Short Story (5,000 words)</dd></div></dl>
+      <p class="logline">After losing a patient she held dear, Dr. Cha keeps missing her and holds on to the hope that they will meet again somewhere.</p>
+      <div class="section">
+        <h2>The short story as a medium</h2>
+        <ul class="traits">
+          <li><b>Prequel</b><span>Lays the roots of the world before its story begins</span></li>
+          <li><b>A single event</b><span>Keeps the focus on one moment</span></li>
+          <li><b>Compressed conflict</b><span>Condenses the conflict into a few pages</span></li>
+          <li><b>A powerful message and lingering resonance</b><span>Leaves a question behind after the last line</span></li>
+        </ul>
+      </div>
+      <div class="section">
+        <h2>Synopsis</h2>
+        <p class="synopsis">Ha-hyun Cha, an intern at Seiyon University Hospital, has a panic attack every time she attempts an endotracheal intubation. The chief resident cannot understand why she struggles with such a basic procedure, but despite his constant belittling and upbraiding, there’s a deep-seated trauma that she can’t overcome. Then she catches a patient, Kim Sarang, stealing from other patients on the ward. She doesn’t report the theft because she feels an unspoken kinship towards the young woman – a terminal cancer patient who steals only from those on the road to recovery, which is something she herself will never experience. Ha-hyun respects Sarang’s ability to do whatever she wants, regardless of the consequences.</p>
+        <p class="synopsis">The two keep running into each other in the ward’s utility room and develop a friendship. Through this, Ha-hyun finally faces her shattered dreams of being a professional violinist following a car accident where her left hand was crushed. Then, Sarang goes into cardiac arrest. As the only doctor present, Ha-hyun has no choice but to face her fears and intubate, which she does successfully for the first time.</p>
+        <p class="synopsis">However, although Ha-hyun saved Sarang’s life that day, she couldn’t save her from her cancer, and when Sarang passes away, Ha-hyun returns to the utility room where they’d grown so close and sorts through Sarang’s belongings and makes a silent vow: wherever Sarang may be, if she is ever needed, Ha-hyun will go to her.</p>
+      </div>
+      <div class="section">
+        <h2>Materials</h2>
+        <div class="links">${A("https://drive.google.com/file/d/19ikB9h0_GiCGO7mWMHqX24-qSgyAJP3p/view?usp=drive_link", "Opening Excerpt (English, 1 p.)")}${A("https://drive.google.com/file/d/1WTKv05PPmx9cQA05YXYuS4zr5oJ27wsK/view?usp=drive_link", "Manuscript (Korean, 11 pp.)")}</div>
+      </div>`,
+  },
+
+  long: {
+    stop: "long", m: "novel", next: "q2", nextLabel: "Next",
+    html: `
+      <div class="eyebrow"><b>Novel · Novella</b><span><i>In Search of You</i></span></div>
+      <div class="story">
+        <p>They call it Iwol, the land of two moons.</p>
+        <p>In this martial kingdom, only the greatest warrior can rise to power, and Dalfu was tragically born with no gift for combat whatsoever.</p>
+        <p>When she loses her closest friend, Soyul, on the battlefield, Dalfu plays the legendary relic, the New Moon Flute, and begs for a savior who can bring her friend back.</p>
+        <p>It summons Ha-hyun Cha, an oncologist from South Korea.</p>
+        <p>Ha-hyun does not yet recognize Dalfu as the patient she once lost.</p>
+        <p>She is desperate to return home, until she realizes that the only way back is to grant the wish of the one who summoned her.</p>
+        <p>And so begins the journey of Dalfu and Ha-hyun.</p>
+      </div>
+      <button type="button" class="more" data-go="longInfo">Read more · <i>In Search of You</i> →</button>`,
+  },
+
+  q2: {
+    stop: "long", m: "novel",
+    html: `
+      <p class="question">Are you curious about the romance between <span style="white-space: nowrap">Ha-hyun</span> and the two princes she meets along the way?</p>
+      <div class="choices">
+        <button type="button" class="choice" data-m="novel" data-go="longInfo"><span class="ans">No</span><span class="to">I’d like to see more of the novella</span></button>
+        <button type="button" class="choice" data-m="webtoon" data-go="webtoon"><span class="ans">Yes</span><span class="to">Go to the webtoon <i>Doctor Half-Moon</i></span></button>
+      </div>`,
+  },
+
+  longInfo: {
+    stop: "long", m: "novel",
+    html: `
+      <div class="eyebrow"><b>Novel · Novella</b><span>Transmedia · Dalfu’s side</span></div>
+      <h1>In Search of You</h1>
+      <dl class="meta"><div><dt>Type</dt><dd>Novella (33,000 words) – Companion to the webtoon, told from Dalfu’s side of the same summoning</dd></div><div><dt>Genre</dt><dd>YA Coming-of-age</dd></div></dl>
+      <p class="logline">On her journey to find the friend she lost in the war, Dalfu finds herself instead.</p>
+      <div class="section">
+        <h2>The novel as a medium</h2>
+        <ul class="traits">
+          <li><b>Interiority and growth</b><span>Dwells on a character’s lack and change</span></li>
+          <li><b>Freedom in time</b><span>Moves between present and past</span></li>
+          <li><b>Alternating points of view</b><span>Gives several characters an equal voice</span></li>
+          <li><b>Internal conflict</b><span>Sustains a long narrative without an external antagonist</span></li>
+        </ul>
+      </div>
+      <div class="section">
+        <h2>Synopsis</h2>
+        <p class="synopsis">Dalfu is one of the least talented and most hopeless children ever born to one of the four great houses of the Kingdom of Iwol. Here, in the land of two moons, there are many inherent gifts – sight, hearing, smell, and touch – and every one of them is bent toward becoming the greatest warrior. Dalfu accepted long ago that this would never be her path.</p>
+        <p class="synopsis">Then, in the chaos of the battlefield, she loses her closest friend, Soyul. In desperation, she plays the New Moon Flute and begs for a savior. When she comes to, she is trapped in a stranger’s body on the far side of the battlefield. Driven by the single-minded necessity to get her friend back, she searches all over Iwol until the trail leads her to the royal palace. There, a strange woman is strutting around in Dalfu’s own body, passing herself off as Dalfu. This is not the savior she had in mind!</p>
+        <p class="synopsis">She confronts this soul-swapped stranger, and asks her who she thinks she is to steal another woman’s body like this. The woman explains she is an elite healer from a place called “Korea”. She’s desperate to return home for an important conclave and begs for Dalfu’s help. Dalfu agrees only if this strange healer will help her track down Soyul. And so begins an absurd partnership between the two, born out of desperation, ambition, and a care for the common good.</p>
+      </div>
+      <div class="section">
+        <h2>Materials</h2>
+        <div class="links"><span>Excerpt forthcoming</span></div>
+      </div>
+      <div class="section">
+        <h2>Crossmedia expansion</h2>
+        <div class="tags"><span class="tag">Web novel</span><span class="tag">Film</span></div>
+      </div>`,
+  },
+
+  webtoon: {
+    stop: "webtoon", m: "webtoon", next: "q3", nextLabel: "Next",
+    html: `
+      <div class="eyebrow"><b>Webtoon</b><span><i>Doctor Half-Moon: The Savior Who Rises with the Moon</i></span></div>
+      <div class="story">
+        <p>Ha-hyun Cha is a genius oncologist on the verge of becoming the youngest ever professor at Seiyon University Hospital.</p>
+        <p>She opens her eyes in a strange land where two moons hang in the sky.</p>
+        <p>In the martial Kingdom of Iwol, healing has no place.</p>
+        <p>The art of saving lives, she is told, is fit only for outcasts!</p>
+        <p>Ha-hyun is desperate to get back to Korea.</p>
+        <p>But when she saves Taegang, the crown prince, from a slow poison, she is swept into a plot against the heir to the throne…</p>
+        <p>…and into a love triangle with Taegang’s younger brother, Jugang, who envies him.</p>
+      </div>
+      <button type="button" class="more" data-go="webtoonInfo">Read more · <i>Doctor Half-Moon</i> →</button>`,
+  },
+
+  q3: {
+    stop: "webtoon", m: "webtoon",
+    html: `
+      <p class="question">Would you be curious to read further about the drama that brings together the plots of the short story, the novella, and the webtoon you have just read?</p>
+      <div class="choices">
+        <button type="button" class="choice" data-m="webtoon" data-go="webtoonInfo"><span class="ans">No</span><span class="to">I’d like to see more of the webtoon</span></button>
+        <button type="button" class="choice" data-m="drama" data-go="drama"><span class="ans">Yes</span><span class="to">Go to the drama <i>Doctor Half-Moon</i></span></button>
+      </div>`,
+  },
+
+  webtoonInfo: {
+    stop: "webtoon", m: "webtoon",
+    html: `
+      <div class="eyebrow"><b>Webtoon</b><span>Transmedia · Ha-hyun’s side</span></div>
+      <h1>Doctor Half-Moon: The Savior Who Rises with the Moon</h1>
+      <dl class="meta"><div><dt>Type</dt><dd>Webtoon (50 episodes)</dd></div><div><dt>Genre</dt><dd>Romantasy</dd></div><div><dt>Role</dt><dd>Writer</dd></div></dl>
+      <p class="logline">An enemies-to-lovers romance of mutual salvation between Ha-hyun Cha, a genius doctor from South Korea, and Taegang, crown prince of the martial Kingdom of Iwol.</p>
+      <div class="section">
+        <h2>The webtoon as a medium</h2>
+        <ul class="traits">
+          <li><b>Genre conventions and mass appeal</b><span>Follows the narrative grammar of its genre for a clear target audience</span></li>
+          <li><b>The inner voice made visible</b><span>Drives the story through the protagonist’s inner voice</span></li>
+          <li><b>A fixed point of view</b><span>One protagonist, with brief voices from one or two supporting characters</span></li>
+          <li><b>Chemistry among four or fewer</b><span>Stages the clash with the antagonist visually for an instant payoff</span></li>
+        </ul>
+      </div>
+      <div class="section">
+        <h2>Synopsis</h2>
+        <p class="synopsis">Dr. Cha is a ruthless rising star in global oncology, but behind her genius lies a stimulant addiction fuelled by chronic insomnia. On the morning of her interview to become a professor, she wakes from a nightmare in which she found herself saved from certain death by a man she knew but couldn’t place. As she pops her usual pill, a Code Blue sounds and she races down the hallway toward the ICU. That’s when her heart gives up.</p>
+        <p class="synopsis">When Ha-hyun opens her eyes, she is lying in the middle of a battlefield with two red moons hanging in the sky. This is the Kingdom of Iwol, a nation where only the greatest warrior can seize power, and where healing has no place. For a defeated soldier, taking his own life is the only way to keep his honor into death. Of course, Ha-hyun knows none of this and she attempts to save the life of a dying soldier, which raises the ire of Taegang, the crown prince of Iwol. But while they argue, the prince keeps calling her by a strange name. Ha-hyun looks down at her hands and body. They are not her own.</p>
+        <p class="synopsis">Ha-hyun has awoken in the body of someone else entirely: Dalfu – Taegang’s betrothed. Just her luck. She’s never even dated anyone, and now she’s engaged! Taegang’s younger brother, Jugang, immediately senses a change in who he also believes is Dalfu, and he pours sweet nothings into her ear. Not only does he intend to take his brother’s crown, but also his fiancée, and when he promises to guide her back to Korea in exchange for help in exposing the cause of the Queen’s death a decade ago, Ha-hyun is torn. But she can’t stop thinking about Taegang, and she even defies the taboo on healing to cure him of a slow poison that has been eating away at him for days. She has to save him – and no, it’s not because she has grown attached to him, or because her heart is wavering. Absolutely not!</p>
+        <p class="synopsis">Ha-hyun’s hunt for the poisoner leads her ever deeper into the politics and machinations of Iwol and its enemies. She uncovers an unholy alliance between the rival Kingdom of Heukwol and Iwol’s own disenfranchised underclass. Between them, they plan to swallow the Kingdom of Iwol whole. Meanwhile, Ha-hyun walks a tightrope between Jugang and Taegang, but is knocked for a loop when the real Dalfu comes back, wearing Ha-hyun’s dishevelled body. Ha-hyun cannot believe in love, Taegang cannot hide his feelings, and Jugang is waiting to slip through the cracks. The tangled relationships among these four surge and sway along the journey to unmask the architect of Iwol’s betrayal.</p>
+        <div class="tags"><span class="tag">Enemies to lovers</span><span class="tag">Mutual salvation</span><span class="tag">Soul swap</span><span class="tag">Developed from the original drama concept</span></div>
+      </div>
+      <div class="section">
+        <h2>Materials</h2>
+        <div class="links">${A("https://drive.google.com/file/d/1TMgvK243s38lV3e1WNpjtpS0VCf4rhJE/view?usp=drive_link", "Synopsis (Korean)")}${A("https://drive.google.com/file/d/11vXS3oiRg9Du6tnNwtPzUQEYUkzn1bVv/view?usp=drive_link", "Character Sheets (Korean)")}<span id="eps" style="display: contents"></span></div>
+      </div>
+      <div class="section">
+        <h2>Crossmedia expansion</h2>
+        <div class="tags"><span class="tag">Short-form drama</span></div>
+      </div>`,
+  },
+
+  drama: {
+    stop: "drama", m: "drama", next: "end", nextLabel: "End the journey",
+    html: `
+      <div class="eyebrow"><b>Drama</b><span>Crossmedia · The original concept</span></div>
+      <h1>Doctor Half-Moon: The Savior Who Rises with the Moon</h1>
+      <dl class="meta"><div><dt>Type</dt><dd>TV Drama (50 min × 10 episodes)</dd></div><div><dt>Genre</dt><dd>Fantasy Medical Drama</dd></div><div><dt>Role</dt><dd>Screenwriter</dd></div></dl>
+      <p class="logline">Dr. Cha, a genius cardiac surgeon from South Korea, finds himself inside the body of Dalfu, a hapless healing mage of Iwol, and is swept into her journey to save a friend who has fallen victim to a ruthless struggle for power.</p>
+      <div class="section">
+        <h2>The drama as a medium</h2>
+        <ul class="traits">
+          <li><b>A complex narrative</b><span>Gives different characters their own episodes and points of view</span></li>
+          <li><b>A large ensemble</b><span>Shifts point of view even within a single episode</span></li>
+          <li><b>Conflict brought to the surface</b><span>Puts the clash with a powerful antagonist front and center</span></li>
+          <li><b>Reflection and entertainment</b><span>Carries the webtoon’s confrontation and the novel’s reflection together</span></li>
+        </ul>
+      </div>
+      <div class="section">
+        <h2>Synopsis</h2>
+        <p class="synopsis">In the beginning, there was the Spring of Gifts. This sacred relic, the source of all healing magic, bestowed on certain people an extraordinary sense of sight, hearing, smell, or touch. So keen were their senses that they could see neurons, hear the voice of the soul, smell inflammation, and feel flaws in muscle and bone through skin with their fingertips. In our world’s terms, each gift specializes in neurosurgery, psychiatry, internal medicine, or orthopedics. Where there is power, there are the powerful. In the Kingdom of Iwol (<span class="han">二月國</span>), four great houses of healers gathered around the Healing Tower, respectfully keeping one another in check and upholding their traditions for more than five hundred years. Then one day, like a curse, the Spring of Gifts ran dry, and an age of chaos descended. The authority of the Healing Tower faltered, the people’s illnesses worsened, and the royal family lost the hearts of its subjects.</p>
+        <p class="synopsis">The House of Hyang is on the edge of collapse, with its heir, Dalfu, falling hopelessly short of its sky-high expectations. The black sheep of her family and a disgrace to her family name, Dalfu is made more miserable still by her unrequited love of Soyul, the prodigy of the House of Hae, which is home to the mighty heroes of the people.</p>
+        <p class="synopsis">Years of resentment, tangled with love, drive Dalfu to say something cruel to Soyul as she sets out on a healing tour of the kingdom: “I hope you never come back.” She had no idea, then, that Soyul’s family would be slaughtered by a pack of wolfhound beasts sent by unknown powers, nor that Soyul herself would vanish without a trace. Someone must be behind it. But who? A prince with his eye on the throne? A princess? Or the head of the rival Healing Tower? With no one left to trust, Dalfu turns to the sacred relic, the New Moon Flute, for help. Her desperate incantation summons Ha-hyun Cha, a heart healer from a far-flung place called “South Korea”.</p>
+        <p class="synopsis">Before he was summoned, Ha-hyun had been in the middle of an operation. When he awakes, he finds himself inside a towering spire, surrounded by people in unfamiliar robes. Even more bizarrely, he finds himself in the body of a girl named Dalfu Hyang. The summoning had struck at the very moment he was about to become the youngest ever professor, and Ha-hyun is desperate to get back to Korea as quickly as possible. But it seems the only way home is to grant the wish of the one who summoned him. And so, with two souls sharing one body, a fantasy medical quest across the Kingdom of Iwol to find Soyul begins.</p>
+        <div class="tags"><span class="tag">The original concept</span><span class="tag">Grew into the webtoon and the novella</span><span class="tag">Two souls, one body</span></div>
+      </div>
+      <div class="section">
+        <h2>Materials</h2>
+        <div class="links">${A("https://drive.google.com/file/d/14oy2F3s9I2kPaTHU0KPqVmHd4oxXLsO7/view?usp=drive_link", "Synopsis, Treatment &amp; Scripts for Episodes 1–2 (Korean)")}</div>
+      </div>`,
+  },
+
+  end: {
+    stop: "drama", m: "drama", end: true,
+    html: `
+      <div class="eyebrow"><b>Drama</b><span>The end of the journey</span></div>
+      <h1>This is the end of Dr. Cha’s journey.<br>Thanks!</h1>
+      <div class="choices">
+        <button type="button" class="choice" data-m="drama" data-go="summary"><span class="ans">Summary</span><span class="to">One Storyworld, Four Media</span></button>
+        <button type="button" class="choice" data-m="drama" data-go="bible"><span class="ans">Appendix</span><span class="to">World Bible: The Kingdom of Iwol</span></button>
+      </div>`,
+  },
+
+  summary: {
+    stop: null, m: "drama", next: "bible", nextLabel: "Appendix", nextSub: "World Bible: The Kingdom of Iwol",
+    html: `
+      <div class="eyebrow"><b>Summary</b><span>The structure of the portfolio</span></div>
+      <h1>One Storyworld, Four Media</h1>
+      <p class="sum-sub">A portfolio in which each medium tells a different story to complete one storyworld</p>
+      <div class="sum-wrap"><svg class="sum-svg" viewBox="0 0 680 626" role="img" aria-label="Diagram: the drama at the center branches into the short story, the novella and the webtoon, which are joined by a transmedia circle." xmlns="http://www.w3.org/2000/svg"><circle cx="340" cy="310" r="225" fill="none" stroke="var(--novel)" stroke-width="3"/><line x1="340" y1="175" x2="340" y2="220" stroke="var(--drama)" stroke-width="2.5"/><line x1="262" y1="355" x2="250" y2="362" stroke="var(--drama)" stroke-width="2.5"/><line x1="418" y1="355" x2="430" y2="362" stroke="var(--drama)" stroke-width="2.5"/><line x1="98" y1="492" x2="98" y2="516" stroke="var(--faint)" stroke-width="1.2" stroke-dasharray="4 4"/><line x1="188" y1="492" x2="188" y2="516" stroke="var(--faint)" stroke-width="1.2" stroke-dasharray="4 4"/><rect x="48" y="516" width="100" height="30" rx="15" fill="var(--tint-novel)"/><text class="s-chip" x="98.0" y="535.5" text-anchor="middle" fill="var(--novel)">Web novel</text><rect x="158" y="516" width="60" height="30" rx="15" fill="var(--tint-novel)"/><text class="s-chip" x="188.0" y="535.5" text-anchor="middle" fill="var(--novel)">Film</text><line x1="535" y1="492" x2="535" y2="516" stroke="var(--faint)" stroke-width="1.2" stroke-dasharray="4 4"/><rect x="470" y="516" width="130" height="30" rx="15" fill="var(--tint-webtoon)"/><text class="s-chip" x="535.0" y="535.5" text-anchor="middle" fill="var(--webtoon)">Short-form drama</text><g class="s-card" data-go="short" tabindex="0" role="link" aria-label="01 Novel · Short Story The First Room"><rect x="235" y="35" width="210" height="140" rx="9" fill="var(--surface)" stroke="var(--novel)" stroke-width="1.6"/><path d="M235 71 V44 Q235 35 244 35 H436 Q445 35 445 44 V71 Z" fill="var(--novel)"/><text class="s-band" x="249" y="58.5" fill="#ffffff">01  |  Novel · Short Story</text><text class="s-title" x="340.0" y="97" text-anchor="middle" fill="var(--ink)">The First Room</text><text class="s-key" x="340.0" y="117" text-anchor="middle" fill="var(--sub)">Prequel · A single event</text><text class="s-key" x="340.0" y="133" text-anchor="middle" fill="var(--sub)">Compressed conflict · Resonance</text><rect class="s-btn" x="292.0" y="145" width="96" height="20" rx="10" fill="var(--surface)" stroke="var(--novel)" stroke-width="1"/><text class="s-btxt" x="340.0" y="158.7" text-anchor="middle" fill="var(--novel)">View work →</text></g><g class="s-card" data-go="longInfo" tabindex="0" role="link" aria-label="02 Novel · Novella In Search of You"><rect x="40" y="352" width="210" height="140" rx="9" fill="var(--surface)" stroke="var(--novel)" stroke-width="1.6"/><path d="M40 388 V361 Q40 352 49 352 H241 Q250 352 250 361 V388 Z" fill="var(--novel)"/><text class="s-band" x="54" y="375.5" fill="#ffffff">02  |  Novel · Novella</text><text class="s-title" x="145.0" y="414" text-anchor="middle" fill="var(--ink)">In Search of You</text><text class="s-key" x="145.0" y="434" text-anchor="middle" fill="var(--sub)">Interiority · Growth</text><text class="s-key" x="145.0" y="450" text-anchor="middle" fill="var(--sub)">Alternating POV · Worldbuilding</text><rect class="s-btn" x="97.0" y="462" width="96" height="20" rx="10" fill="var(--surface)" stroke="var(--novel)" stroke-width="1"/><text class="s-btxt" x="145.0" y="475.7" text-anchor="middle" fill="var(--novel)">View work →</text></g><g class="s-card" data-go="webtoonInfo" tabindex="0" role="link" aria-label="03 Webtoon Doctor Half-Moon"><rect x="430" y="352" width="210" height="140" rx="9" fill="var(--surface)" stroke="var(--webtoon)" stroke-width="1.6"/><path d="M430 388 V361 Q430 352 439 352 H631 Q640 352 640 361 V388 Z" fill="var(--webtoon)"/><text class="s-band" x="444" y="375.5" fill="#ffffff">03  |  Webtoon</text><text class="s-title" x="535.0" y="414" text-anchor="middle" fill="var(--ink)">Doctor Half-Moon</text><text class="s-key" x="535.0" y="434" text-anchor="middle" fill="var(--sub)">Genre power · Visual conflict</text><text class="s-key" x="535.0" y="450" text-anchor="middle" fill="var(--sub)">Fixed POV · Four-character core</text><rect class="s-btn" x="487.0" y="462" width="96" height="20" rx="10" fill="var(--surface)" stroke="var(--webtoon)" stroke-width="1"/><text class="s-btxt" x="535.0" y="475.7" text-anchor="middle" fill="var(--webtoon)">View work →</text></g><g class="s-card" data-go="drama" tabindex="0" role="link" aria-label="04 · Drama Doctor Half-Moon"><circle cx="340" cy="310" r="90" fill="var(--drama-fill)"/><text class="s-dtitle" x="340" y="273" text-anchor="middle" fill="#ffffff">04 · Drama</text><text class="s-dsub" x="340" y="293" text-anchor="middle" fill="#ffffff">Doctor Half-Moon</text><line x1="282" y1="305" x2="398" y2="305" stroke="#8a94ad" stroke-width="0.8"/><text class="s-dkey" x="340" y="323" text-anchor="middle" fill="#d5dae6">Ensemble · Open conflict</text><text class="s-dkey" x="340" y="339" text-anchor="middle" fill="#d5dae6">Reflection & entertainment</text><rect x="292" y="352" width="96" height="20" rx="10" fill="var(--drama-fill)" stroke="#ffffff" stroke-width="1"/><text class="s-btxt" x="340" y="365.7" text-anchor="middle" fill="#ffffff">View work →</text></g><line x1="20" y1="590" x2="50" y2="590" stroke="var(--drama)" stroke-width="2.5"/><text class="s-leg" x="58" y="594" fill="var(--sub)">Crossmedia · Branching from the drama</text><line x1="340" y1="590" x2="370" y2="590" stroke="var(--faint)" stroke-width="1.2" stroke-dasharray="4 4"/><text class="s-leg" x="378" y="594" fill="var(--sub)">Crossmedia · Future expansion</text><line x1="20" y1="608" x2="50" y2="608" stroke="var(--novel)" stroke-width="3"/><text class="s-leg" x="58" y="612" fill="var(--sub)">Transmedia · Three works complete one storyworld</text></svg></div>
+      <p class="sum-hint">Scroll sideways to see the whole diagram.</p>`,
+  },
+
+  bible: {
+    stop: null, m: "drama", next: "start", nextReset: true, nextLabel: "Start over", nextSub: "Begin Dr. Cha’s journey again",
+    html: `
+      <div class="eyebrow"><b>Appendix</b><span>World Bible</span></div>
+      <h1>The Kingdom of Iwol <span class="han">(二月國)</span></h1>
+
+      <section class="bible-sec">
+        <h2><span class="num">Ⅰ</span>The Kingdom of Iwol</h2>
+        <p class="synopsis">A kingdom where two moons rise, Iwol (<span class="han">二月</span>) is named for its twin moons. Iwol is a martial state in which fighting prowess is inextricably linked to social rank. Inborn gifts belong to the state and are used for martial arts alone. The art of killing is therefore an honor, while the art of healing is an abomination, with healers treated as outcasts. Ha-hyun Cha, a doctor from our time and world, is summoned to the Kingdom of Iwol, and her journey unfolds from here.</p>
+      </section>
+
+      <section class="bible-sec">
+        <h2><span class="num">Ⅱ</span>Sullyeok and the Four Houses</h2>
+        <p class="synopsis">Some people in Iwol are born with innate magical abilities called <i>sullyeok</i> (<span class="han">術力</span>) and are known as adepts. A great house stands for each of the four strands of sullyeok, each of which has honed a single sense to its limit.</p>
+        <div class="houses">
+          <div class="house dalfu"><span class="hj">香</span><b>House of Hyang</b><span>Smell</span><span class="tagline">Dalfu’s house</span></div>
+          <div class="house"><span class="hj">輝</span><b>House of Hwi</b><span>Sight</span></div>
+          <div class="house"><span class="hj">脈</span><b>House of Maek</b><span>Touch</span></div>
+          <div class="house"><span class="hj">韻</span><b>House of Un</b><span>Hearing</span></div>
+        </div>
+        <p class="synopsis">The royal family reigns over all, and adepts who belong to none of the four houses are driven out to the fringes of society. Dalfu is born into the House of Hyang with an extraordinary sense of smell, yet no gift for combat whatsoever. However, her gift leans toward saving lives, and the central tension of her story is how she can use these gifts to claim her place in this martial world.</p>
+      </section>
+
+      <section class="bible-sec">
+        <h2><span class="num">Ⅲ</span>The New Moon Flute</h2>
+        <p class="synopsis">A sacred relic that answers a desperate wish by summoning a being from another world. In return for granting a wish, it takes what the wisher holds most dear. Dalfu plays this flute to summon a savior in the form of Ha-hyun.</p>
+      </section>
+
+      <section class="bible-sec">
+        <h2><span class="num">Ⅳ</span>What the Moon Means</h2>
+        <p class="synopsis">In this world, the moon is a symbol not of completeness but of becoming. The waxing half-moon (<span class="han">上弦</span>) swells toward fullness yet never stops doubting itself. The waning half-moon (<span class="han">下弦</span>) wears away toward the dark of the moon yet keeps fighting its fate. Though they seem to be opposites, both grow from a single emotion: the anxiety of a being that has not yet become something.</p>
+        <div class="moons">
+          <div class="moon-card"><span class="moon waxing" aria-hidden="true"></span><div><b>Waxing · <span class="han">上弦</span> · Dalfu</b><span>Has nothing, and grows by being filled.</span></div></div>
+          <div class="moon-card"><span class="moon waning" aria-hidden="true"></span><div><b>Waning · <span class="han">下弦</span> · Ha-hyun</b><span>Has everything, and grows by being emptied.</span></div></div>
+        </div>
+        <p class="synopsis">Dalfu, who has nothing, is the waxing moon. Ha-hyun, the gifted physician who has everything, is the waning moon, as her very name (<span class="han">下弦</span>, hahyeon) suggests. Dalfu grows by being filled; Ha-hyun grows by being emptied. She does not leap over the wall of her pride. Instead, love brings that wall down. A moon must empty before it can fill again, so in this world, to wane and wear away is not to vanish but to make room for the next waxing.</p>
+      </section>
+
+`,
+  },
+};
+
+const scene = document.getElementById("scene");
+const backBtn = document.getElementById("back");
+const nextBtn = document.getElementById("next");
+let trail = [];
+let current = "start";
+const seen = new Set();
+
+const FIT_SCENES = ["short", "longInfo", "webtoonInfo", "drama", "bible"];
+/* The synopsis box always shows at least half of the synopsis; if the screen can't hold that, the page scrolls a little instead. */
+function sizeSynopsis() {
+  const syn = scene.querySelector(".syn-scroll");
+  if (!syn) return;
+  const h2 = syn.querySelector("h2");
+  const body = syn.querySelector(".syn-body");
+  const half = Math.ceil(body.scrollHeight * 0.5 + (h2 ? h2.offsetHeight + 10 : 0));
+  syn.style.setProperty("--syn-min", half + "px");
+}
+window.addEventListener("resize", sizeSynopsis);
+if (document.fonts) document.fonts.ready.then(sizeSynopsis);
+let curNoNext = false;
+function render(id, push, noNext) {
+  if (push) trail.push(current);
+  current = id;
+  curNoNext = !!noNext;
+  const s = S[id];
+  scene.dataset.m = s.m || "";
+  scene.className = "scene" + (s.end ? " end" : "");
+  scene.innerHTML = s.html;
+  document.querySelector(".path").hidden = id === "cover";
+  document.getElementById("home-btn").hidden = id === "cover";
+  document.getElementById("nav").hidden = id === "cover";
+  /* Work pages fit one screen: the synopsis scrolls inside its own box instead of the page. */
+  const fit = FIT_SCENES.includes(id);
+  document.body.classList.toggle("fit", fit);
+  document.body.classList.toggle("fit-summary", id === "summary");
+  document.body.classList.toggle("fit-bible", id === "bible");
+  document.body.classList.toggle("on-start", ["start", "q2", "q3"].includes(id));
+  document.body.classList.toggle("on-long", id === "long" || id === "webtoon");
+  const syn = fit && scene.querySelector(".synopsis")?.closest(".section");
+  if (syn) {
+    const body = document.createElement("div");
+    body.className = "syn-body";
+    body.append(...[...syn.children].filter((el) => el.tagName !== "H2"));
+    syn.append(body);
+    syn.classList.add("syn-scroll");
+    sizeSynopsis();
+  }
+  void scene.offsetWidth;
+  scene.classList.add("enter");
+
+  if (s.stop) seen.add(s.stop);
+  document.querySelectorAll(".stop").forEach((el) => {
+    el.classList.toggle("now", el.dataset.k === s.stop);
+    el.classList.toggle("seen", seen.has(el.dataset.k) && el.dataset.k !== s.stop);
+  });
+
+  backBtn.hidden = trail.length === 0;
+  if (s.next && !noNext) {
+    nextBtn.hidden = false;
+    nextBtn.innerHTML = s.nextLabel + " →" + (s.nextSub ? `<small>${s.nextSub}</small>` : "");
+  } else {
+    nextBtn.hidden = true;
+  }
+
+  const eps = document.getElementById("eps");
+  if (eps) {
+    eps.innerHTML = [1, 2, 3].map((n) => EPISODE_LOCAL
+      ? `<a href="ep${n}.html" data-local-viewer target="_blank" rel="noopener">Episode ${n} (Korean)</a>`
+      : (EPISODE_LINKS[n] ? A(EPISODE_LINKS[n], `Episode ${n} (Korean)`) : `<span>Episode ${n} (Korean)</span>`)).join("");
+  }
+  /* Phones: the summary diagram scrolls sideways; start it centered on the drama circle. */
+  const sw = scene.querySelector(".sum-wrap");
+  if (sw) sw.scrollLeft = (sw.scrollWidth - sw.clientWidth) / 2;
+  window.scrollTo({ top: 0 });
+}
+
+scene.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-go]");
+  if (!b) return;
+  if (b.dataset.reset) { trail = []; seen.clear(); render(b.dataset.go, false); return; }
+  render(b.dataset.go, true, b.classList.contains("more"));
+});
+document.getElementById("home-btn").addEventListener("click", () => { if (current !== "cover") render("cover", true); });
+nextBtn.addEventListener("click", () => {
+  const s = S[current];
+  if (!s.next) return;
+  if (s.nextReset) { trail = []; seen.clear(); render(s.next, false); return; }
+  render(s.next, true);
+});
+backBtn.addEventListener("click", () => { if (trail.length) render(trail.pop(), false); });
+
+
+const viewer = document.getElementById("viewer");
+const vFrame = document.getElementById("viewer-frame");
+function closeViewer() { viewer.hidden = true; vFrame.src = "about:blank"; document.body.classList.remove("viewer-open"); }
+document.addEventListener("click", (e) => {
+  if (!USE_POPUP) return;
+  const a = e.target.closest('a[href*="drive.google.com/file/d/"], a[data-local-viewer]');
+  if (!a || a.id === "viewer-open") return;
+  e.preventDefault();
+  if (a.hasAttribute("data-local-viewer")) {
+    vFrame.src = a.getAttribute("href");
+  } else {
+    const m = a.href.match(/\/file\/d\/([^/?#]+)/);
+    vFrame.src = "https://drive.google.com/file/d/" + m[1] + "/preview";
+  }
+  document.getElementById("viewer-open").href = a.href;
+  document.getElementById("viewer-title").textContent = a.textContent;
+  viewer.hidden = false;
+  document.body.classList.add("viewer-open");
+  document.getElementById("viewer-close").focus();
+});
+document.getElementById("viewer-close").addEventListener("click", closeViewer);
+viewer.addEventListener("click", (e) => { if (e.target === viewer) closeViewer(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !viewer.hidden) closeViewer(); });
+
+/* Language switch: carry the current scene, back history and visited media to the other language's page. */
+const LANG_KEY = "drcha-journey-state";
+const langSwitch = document.getElementById("lang-switch");
+if (langSwitch) {
+  langSwitch.addEventListener("click", () => {
+    try { sessionStorage.setItem(LANG_KEY, JSON.stringify({ current, trail, seen: [...seen], noNext: curNoNext })); } catch (err) {}
+  });
+}
+function restoreState() {
+  try {
+    const raw = sessionStorage.getItem(LANG_KEY);
+    if (!raw) return false;
+    sessionStorage.removeItem(LANG_KEY);
+    const st = JSON.parse(raw);
+    if (!st || !S[st.current]) return false;
+    trail = (st.trail || []).filter((k) => S[k]);
+    (st.seen || []).forEach((k) => seen.add(k));
+    render(st.current, false, st.noNext);
+    return true;
+  } catch (err) { return false; }
+}
+scene.addEventListener("keydown", (e) => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  const g = e.target.closest("g[data-go]");
+  if (!g) return;
+  e.preventDefault();
+  render(g.dataset.go, true);
+});
+if (!restoreState()) render("cover", false);
+</script>
+</body>
+</html>

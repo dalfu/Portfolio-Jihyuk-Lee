@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}img{max-width:100%}body{margin:0}</style>
+<title>닥터 차의 여정</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* Layout: one reading column; a four-stop media path on top, one scene in the middle, back/next at the bottom. Color is used only to tell the media apart. */
+:root {
+  --bg: #fbfbfc;
+  --surface: #ffffff;
+  --ink: #1b2030;
+  --sub: #5a6072;
+  --faint: #9aa0b0;
+  --rule: #e4e6ec;
+  --novel: #3d5a80;
+  --webtoon: #5f5482;
+  --drama: #14213d;
+  --drama-on: #ffffff;
+  --tint-novel: #e8edf3; --tint-webtoon: #ecebf2; --drama-fill: #14213d;
+  --story: "Gowun Batang", "Noto Serif KR", "AppleMyungjo", serif;
+  --ui: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--ui); font-size: 15px; line-height: 1.6; word-break: keep-all; overflow-wrap: break-word;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 40px;
+}
+.wrap { max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+
+.path { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.stop { display: flex; flex-direction: column; gap: 6px; font-size: 13.8px; color: var(--faint); min-width: 0; }
+.stop .bar { height: 4px; border-radius: 2px; background: var(--rule); }
+.stop .lab { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stop.seen .bar { background: var(--c); opacity: .35; }
+.stop.now .bar { background: var(--c); opacity: 1; }
+.stop.now .lab { color: var(--c); font-weight: 600; }
+.stop[data-m="novel"] { --c: var(--novel); }
+.stop[data-m="webtoon"] { --c: var(--webtoon); }
+.stop[data-m="drama"] { --c: var(--drama); }
+
+.scene { display: flex; flex-direction: column; gap: 22px; min-height: 360px; }
+.scene.enter { animation: rise .35s ease-out; }
+@keyframes rise { from { opacity: .4; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .scene.enter { animation: none; } }
+
+.eyebrow { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-size: 13px; color: var(--sub); }
+.eyebrow b { color: var(--c, var(--ink)); font-weight: 600; }
+.scene[data-m="novel"] { --c: var(--novel); }
+.scene[data-m="webtoon"] { --c: var(--webtoon); }
+.scene[data-m="drama"] { --c: var(--drama); }
+h1 { font-family: var(--story); font-weight: 700; font-size: clamp(24px, 5vw, 32px); line-height: 1.35; margin: 0; text-wrap: balance; }
+.story { font-family: var(--story); font-size: 18px; line-height: 1.95; display: flex; flex-direction: column; gap: 14px; max-width: 34em; }
+.story p { margin: 0; }
+
+.question { font-family: var(--story); font-weight: 700; font-size: clamp(22px, 4.6vw, 28px); line-height: 1.5; margin: 0; text-wrap: balance; }
+.choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.choice {
+  font: inherit; text-align: left; cursor: pointer; background: var(--surface); color: var(--ink);
+  border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px;
+}
+.choice:hover { border-color: var(--k); }
+.choice:focus-visible, .nav button:focus-visible, .links a:focus-visible { outline: 2px solid var(--k, var(--ink)); outline-offset: 2px; }
+.choice .ans { font-weight: 600; font-size: 17px; color: var(--k); }
+.choice .to { font-size: 13px; color: var(--sub); }
+.choice[data-m="novel"] { --k: var(--novel); }
+.choice[data-m="webtoon"] { --k: var(--webtoon); }
+.choice[data-m="drama"] { --k: var(--drama); }
+
+.section { display: flex; flex-direction: column; gap: 10px; }
+.section h2 { font-size: 13px; font-weight: 600; letter-spacing: .04em; color: var(--sub); margin: 0; }
+.traits { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 20px; }
+.traits li { padding: 10px 0; border-top: 1px solid var(--rule); display: flex; flex-direction: column; gap: 2px; }
+.traits li b { font-weight: 600; }
+.traits li span { color: var(--sub); font-size: 14px; }
+.synopsis { font-family: var(--story); font-size: 17px; line-height: 1.9; margin: 0; max-width: 34em; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { font-size: 12.5px; padding: 3px 10px; border-radius: 999px; border: 1px dashed var(--faint); color: var(--sub); }
+.links { display: flex; flex-wrap: wrap; gap: 8px; }
+.links a, .links span {
+  font-size: 14px; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--c); color: var(--c); text-decoration: none;
+}
+.links span { border-style: dashed; color: var(--faint); border-color: var(--rule); }
+.links a:hover { background: color-mix(in srgb, var(--c) 8%, transparent); }
+
+.meta { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0; font-size: 13px; color: var(--sub); }
+.meta div { display: flex; gap: 6px; }
+.meta dt { color: var(--faint); }
+.meta dd { margin: 0; color: var(--ink); }
+.logline { margin: 0; font-family: var(--story); font-size: 18px; line-height: 1.7; padding-left: 14px; border-left: 2px solid var(--c); }
+.synopsis + .synopsis { margin-top: 4px; }
+.more { align-self: flex-start; font: inherit; font-size: 14px; font-weight: 600; background: transparent; color: var(--c); border: 1px solid var(--c); border-radius: 999px; padding: 7px 18px; cursor: pointer; }
+.more:hover { background: color-mix(in srgb, var(--c) 8%, transparent); }
+.more:focus-visible { outline: 2px solid var(--c); outline-offset: 2px; }
+.cover { display: flex; flex-direction: column; gap: 24px; padding-block: 4px; }
+.cover-kicker { margin: 0; font-size: 12.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--sub); }
+.cover-title { margin: 0; font-family: var(--story); font-weight: 700; font-size: clamp(32px, 7vw, 46px); line-height: 1.15; display: flex; flex-direction: column; gap: 8px; text-wrap: balance; }
+.cover-title span { font-weight: 400; font-style: italic; font-size: clamp(19px, 4vw, 24px); color: var(--sub); }
+.cover-title span { font-style: normal; }
+.cover-author { margin: 0; font-size: 18px; font-weight: 500; }
+.cover-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; font-size: 12.5px; color: var(--sub); padding-bottom: 12px; border-bottom: 1px solid var(--rule); }
+.cover-meta b { color: var(--ink); font-weight: 600; }
+.cover-lead { display: flex; flex-direction: column; gap: 14px; padding: 18px 0 4px; }
+.cover-works { background: var(--surface); color: var(--ink); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+.cover-works summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; }
+.cover-works summary::-webkit-details-marker { display: none; }
+.cover-works summary::after { content: "+"; font-size: 18px; line-height: 1; color: var(--sub); }
+.cover-works[open] summary::after { content: "−"; }
+.cover-works summary:focus-visible { outline: 2px solid var(--ink); outline-offset: -4px; }
+.cover-works h2 { margin: 0; font-size: 13px; font-weight: 500; letter-spacing: .02em; color: var(--sub); }
+.cover-works ol { list-style: none; margin: 0; padding: 0 8px 4px; }
+.cover-works li + li { border-top: 1px solid var(--rule); }
+.cover-work { width: 100%; font: inherit; text-align: left; cursor: pointer; background: transparent; color: var(--ink); border: 0; border-radius: 6px; padding: 10px 8px; display: grid; grid-template-columns: 7.5em minmax(0, 1fr) auto; align-items: baseline; gap: 10px; }
+.cover-work:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.cover-work:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
+.cover-work small { font-size: 12px; font-weight: 600; color: var(--c); }
+.cover-work b { font-family: var(--story); font-size: 15.5px; font-weight: 700; min-width: 0; }
+.cover-work span { font-size: 12px; color: var(--sub); white-space: nowrap; }
+.cover-overview { display: block; margin: 0 8px 12px; padding: 10px 8px 0; border-top: 1px solid var(--rule); width: calc(100% - 16px); text-align: left; font: inherit; font-size: 13px; font-weight: 600; background: none; border-left: 0; border-right: 0; border-bottom: 0; color: var(--ink); cursor: pointer; }
+.cover-overview:hover { text-decoration: underline; text-underline-offset: 3px; }
+.cover .cover-start { font-size: 17px; padding: 16px 30px; border-radius: 10px; }
+.cover .cover-works { margin-top: 28px; }
+.cover-works:not([open]) summary { padding-block: 10px; }
+@media (max-width: 520px) { .cover-work { grid-template-columns: minmax(0, 1fr) auto; } .cover-work small { grid-column: 1 / -1; } }
+.cover-rights { margin: 6px 0 0; padding-top: 14px; border-top: 1px solid var(--rule); font-size: 12.5px; line-height: 1.65; color: var(--sub); display: flex; flex-direction: column; gap: 4px; }
+.cover-note { margin: 0; font-family: var(--story); font-size: 18px; line-height: 1.75; max-width: 30em; }
+.cover-start { align-self: flex-start; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; background: var(--ink); color: var(--bg); border: 0; border-radius: 8px; padding: 12px 20px; }
+.cover-start:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.sum-sub { margin: 0; color: var(--sub); font-size: 15px; }
+.sum-wrap { overflow-x: auto; margin-inline: -4px; }
+.sum-svg { display: block; width: 100%; min-width: 560px; height: auto; }
+.sum-svg .s-band { font-family: var(--ui); font-size: 13px; font-weight: 600; }
+.sum-svg .s-title { font-family: var(--story); font-size: 16px; font-weight: 700; }
+.sum-svg .s-key { font-family: var(--ui); font-size: 11.5px; }
+.sum-svg .s-btxt { font-family: var(--ui); font-size: 11px; font-weight: 600; }
+.sum-svg .s-chip { font-family: var(--ui); font-size: 12.5px; font-weight: 600; }
+.sum-svg .s-dtitle { font-family: var(--story); font-size: 21px; font-weight: 700; }
+.sum-svg .s-dsub { font-family: var(--story); font-size: 13.5px; }
+.sum-svg .s-dkey { font-family: var(--ui); font-size: 11px; }
+.sum-svg .s-leg { font-family: var(--ui); font-size: 11px; }
+.sum-svg .s-card { cursor: pointer; }
+.sum-svg .s-card:hover > rect:first-child, .sum-svg .s-card:hover > circle { opacity: .92; }
+.sum-svg .s-card:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.sum-hint { display: none; margin: 0; font-size: 12px; color: var(--faint); }
+@media (max-width: 600px) { .sum-hint { display: block; } }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 30px; margin-bottom: -12px; }
+.topbtn, .topbar-slot a { display: inline-block; line-height: 1.5; font: inherit; font-size: 13px; line-height: 1.5; color: var(--sub); background: transparent; border: 1px solid var(--rule); border-radius: 999px; padding: 4px 12px; cursor: pointer; text-decoration: none; }
+.topbtn:hover, .topbar-slot a:hover { color: var(--ink); border-color: var(--sub); }
+.topbtn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.topbar-slot { margin-left: auto; }
+.end { align-items: flex-start; justify-content: center; }
+.end h1 { font-family: var(--story); }
+
+.nav { display: flex; justify-content: space-between; gap: 12px; border-top: 1px solid var(--rule); padding-top: 16px; }
+.nav button {
+  font: inherit; font-size: 14px; cursor: pointer; padding: 10px 16px; border-radius: 8px;
+  background: transparent; color: var(--ink); border: 1px solid var(--rule);
+}
+.nav .next { border-color: var(--ink); font-weight: 600; margin-left: auto; text-align: right; }
+.nav .next small { display: block; font-weight: 400; color: var(--sub); font-size: 12px; }
+
+@media (max-width: 520px) {
+  .choices, .traits { grid-template-columns: 1fr; }
+  .stop .lab { white-space: normal; overflow: visible; font-size: 12.65px; line-height: 1.35; }
+  .choice { padding: 14px 16px; }
+  .story { font-size: 17px; }
+}
+.han { font-family: "Gowun Batang", serif; }
+.bible-sec { display: flex; flex-direction: column; gap: 10px; padding-top: 18px; border-top: 1px solid var(--rule); }
+.bible-sec h2 { font-family: var(--story); font-size: 21px; font-weight: 700; color: var(--ink); margin: 0; display: flex; gap: 10px; align-items: baseline; }
+.bible-sec h2 .num { font-family: var(--ui); font-size: 13px; color: var(--faint); min-width: 1.6em; }
+.houses { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 4px 0; }
+.house { border: 1px solid var(--rule); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 2px; background: var(--surface); }
+.house .hj { font-family: "Gowun Batang", serif; font-size: 26px; line-height: 1.2; }
+.house b { font-weight: 600; font-size: 14px; }
+.house span { font-size: 13px; color: var(--sub); }
+.house.dalfu { border-color: var(--novel); }
+.house.dalfu .tagline { color: var(--novel); font-size: 12px; }
+.moons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 4px 0; }
+.moon-card { border: 1px solid var(--rule); border-radius: 10px; padding: 14px; display: flex; gap: 14px; align-items: center; background: var(--surface); }
+.moon { width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--ink); flex: none; }
+.moon.waxing { background: linear-gradient(90deg, transparent 50%, var(--ink) 50%); }
+.moon.waning { background: linear-gradient(90deg, var(--ink) 50%, transparent 50%); }
+.moon-card div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.moon-card b { font-weight: 600; }
+.moon-card span { font-size: 13.5px; color: var(--sub); }
+@media (max-width: 560px) { .houses { grid-template-columns: repeat(2, minmax(0, 1fr)); } .moons { grid-template-columns: 1fr; } }
+.viewer { position: fixed; inset: 0; z-index: 50; background: rgba(10, 12, 20, .72); display: flex; align-items: center; justify-content: center;
+  padding: max(12px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); }
+.viewer-box { background: var(--surface); width: min(980px, 100%); height: 100%; max-height: 92vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--rule); }
+.viewer-bar { display: flex; align-items: center; gap: 10px; padding: 10px 12px 10px 16px; border-bottom: 1px solid var(--rule); }
+.viewer-bar strong { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.viewer-bar a, .viewer-bar button { font: inherit; font-size: 13px; color: var(--ink); background: transparent; border: 1px solid var(--rule); border-radius: 8px; padding: 6px 12px; text-decoration: none; cursor: pointer; white-space: nowrap; }
+.viewer iframe { flex: 1; width: 100%; border: 0; background: var(--bg); }
+.viewer-note { font-size: 12px; color: var(--sub); padding: 8px 16px; border-top: 1px solid var(--rule); }
+body.viewer-open { overflow: hidden; }
+
+/* Same layout as the English page (index_backup_2026-10-28.html). */
+.cover-title { line-height: 1.1; }
+.cover-title span { line-height: 1.3; }
+.sum-svg .s-band { fill: var(--drama-on); }
+
+/* Full-window layout: content spans the browser width. */
+body { padding-left: max(16px, 15vw, env(safe-area-inset-left, 0px)); padding-right: max(16px, 15vw, env(safe-area-inset-right, 0px)); padding-block: 28px 32px; }
+.wrap { max-width: none; min-height: calc(100vh - 60px); }
+.scene { flex: 1; }
+.cover { flex: 1; }
+/* Cover fits one screen even with the work list open: spacing and title size follow the window height. */
+.cover-lead { gap: clamp(10px, 1.8vh, 30px); padding-top: clamp(8px, 1vh, 40px); }
+.cover-title { gap: clamp(10px, 1.6vh, 28px); font-size: min(clamp(40px, 7.5vw, 112px), 10.5vh); }
+.cover .cover-works { margin-top: 0; }
+/* Work pages (body.fit): everything on one screen, only the synopsis box scrolls. Small screens keep normal page scrolling. */
+@media (min-width: 700px) and (min-height: 600px) {
+  body.fit { height: 125vh; overflow-y: auto; }
+  body.fit .wrap { min-height: 100%; }
+}
+/* Work pages render at 80% (like Chrome zoom 80%). CSS zoom also shrinks vh/vw, so those are ×1.25 here to keep their share of the window. */
+body.fit { zoom: .8; padding-left: max(16px, 18.75vw, env(safe-area-inset-left, 0px)); padding-right: max(16px, 18.75vw, env(safe-area-inset-right, 0px)); }
+body.fit .wrap { min-height: calc(125vh - 60px); }
+body.fit .viewer-box { max-height: 115vh; }
+@media (min-width: 700px) and (min-height: 600px) {
+  body.fit .scene { min-height: 0; gap: 16px; }
+  body.fit .scene > * { flex-shrink: 0; }
+  body.fit .traits li { padding: 6px 0; }
+  body.fit .syn-scroll { flex: 1 1 0; min-height: var(--syn-min, 140px); }
+  body.fit .syn-body { flex: 1; min-height: 0; overflow-y: auto; padding-right: 14px; display: flex; flex-direction: column; gap: 10px; scrollbar-width: thin; scrollbar-color: var(--faint) transparent; }
+}
+/* Summary page: the diagram is centered and shrinks to the space left, so the page never scrolls on a normal screen. */
+.sum-wrap { margin-inline: auto; }
+@media (min-width: 700px) and (min-height: 600px) {
+  body.fit-summary { height: 100vh; overflow: hidden; }
+  body.fit-summary .wrap { height: 100%; min-height: 0; gap: 20px; }
+  body.fit-summary .scene { min-height: 0; gap: 12px; }
+  body.fit-summary .scene > * { flex-shrink: 0; }
+  body.fit-summary .sum-wrap { flex: 1 1 0; min-height: 0; max-width: none; width: 100%; margin: 0; overflow: hidden; display: flex; justify-content: center; }
+  body.fit-summary .sum-svg { width: auto; height: 100%; max-width: 100%; min-width: 0; transform: translateY(-10px) scale(1.1); }
+  body.fit-summary .sum-wrap { overflow: visible; }
+  body.fit-summary .nav { padding-top: 12px; }
+}
+/* House and moon cards: content centered in the card. */
+.house { align-items: center; text-align: center; }
+.moon-card { justify-content: center; }
+/* Appendix: one column at body.fit's 80% scale, with slightly tighter spacing. */
+@media (min-width: 1100px) and (min-height: 600px) {
+  body.fit-bible .bible-sec { padding-top: 12px; gap: 8px; }
+  body.fit-bible .bible-sec h2 { font-size: 19px; }
+  body.fit-bible .synopsis { font-size: 16px; line-height: 1.65; }
+  body.fit-bible .house { display: grid; grid-template-columns: auto auto; column-gap: 14px; row-gap: 0; align-items: center; align-content: center; padding: 10px 14px; }
+  body.fit-bible .house .hj { grid-row: 1 / span 3; font-size: 34px; line-height: 1; }
+  body.fit-bible .house b { font-size: 15.5px; }
+  body.fit-bible .house span:not(.hj) { font-size: 13.5px; }
+  body.fit-bible .moon-card b { font-size: 15px; }
+  body.fit-bible .moon-card span:not(.moon) { font-size: 14px; }
+  body.fit-bible .house { justify-content: center; }
+  body.fit-bible .moon-card { padding: 10px 12px; }
+  body.fit-bible .moon { width: 36px; height: 36px; }
+}
+/* The start button runs as wide as the line above it. */
+.cover-cta { display: flex; flex-direction: column; gap: inherit; width: fit-content; max-width: 100%; }
+.cover-cta .cover-start { align-self: stretch; text-align: center; }
+.cover-rights { margin-top: auto; text-align: center; align-items: center; }
+.cover-title span { font-size: clamp(19px, 2.2vw, 30px); }
+h1 { font-size: clamp(26px, 3.6vw, 48px); }
+.question { font-size: clamp(22px, 2.8vw, 36px); }
+.sum-wrap { max-width: 920px; }
+@media (min-width: 1100px) {
+  .traits { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .choices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Text spans the full width, justified on both sides. */
+.story, .synopsis, .logline, .cover-note, .sum-sub, h1, .question { max-width: none; }
+.story p, .synopsis, .logline, .cover-note { text-align: justify; word-break: keep-all; }
+/* Question scenes (opening, q2, q3): centered, No in dark gray and Yes in black. */
+body.on-start .story, body.on-start .story p, body.on-start .question { text-align: center; }
+body.on-start .choice { align-items: center; text-align: center; }
+body.on-start .scene, body.on-long .scene { justify-content: center; gap: 42px; }
+body.on-start .story, body.on-long .story { gap: 20px; }
+body.on-start .choice:first-child { --k: #555555; }
+body.on-start .choice:last-child { --k: #000000; }
+/* Phones (iPhone 17 Pro is 402px wide): normal side gutter, no 80% scale, left-aligned paragraphs (justify leaves gaps in a narrow column). */
+@media (max-width: 699px) {
+  body, body.fit { padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); padding-block: max(16px, env(safe-area-inset-top, 0px)) max(24px, env(safe-area-inset-bottom, 0px)); }
+  body.fit { zoom: 1; }
+  .wrap, body.fit .wrap { min-height: calc(100vh - 40px); min-height: calc(100dvh - 40px); gap: 22px; }
+  .story p, .synopsis, .logline, .cover-note { text-align: left; }
+  body.on-start .story p { text-align: center; }
+  .cover-meta { flex-direction: column; gap: 2px; }
+  .cover-cta { width: 100%; }
+  .cover-rights { font-size: 11.5px; }
+  h1 { font-size: 28px; }
+  .question { font-size: 23px; }
+  .story { font-size: 17.5px; }
+  .synopsis { font-size: 16.5px; }
+  .logline { font-size: 17px; }
+  body.on-start .scene, body.on-long .scene { gap: 28px; }
+  body.on-start .story, body.on-long .story { gap: 14px; }
+  .links a, .links span { font-size: 13.5px; }
+  .nav button { padding: 10px 14px; }
+  body.fit .viewer-box { max-height: 92vh; }
+  .path { gap: 10px; }
+  .sum-wrap { margin-inline: -20px; padding-inline: 20px; }
+}
+/* Cover, centered variant: title block centered and sitting midway between the top bar and the footer. */
+.cover-lead { margin-top: auto; align-items: center; text-align: center; }
+.cover-title { align-items: center; }
+.cover-cta { align-items: center; }
+.cover .cover-works { align-self: center; width: min(100%, 560px); }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar"><button type="button" id="home-btn" class="topbtn" aria-label="표지로 가기" hidden>⌂ 홈</button><span class="topbar-slot"><a id="lang-switch" href="index.html" lang="en">English</a></span></div>
+  <nav class="path" aria-label="여정의 매체 경로">
+    <div class="stop" data-m="novel" data-k="short"><div class="bar"></div><div class="lab">소설 · 단편</div></div>
+    <div class="stop" data-m="novel" data-k="long"><div class="bar"></div><div class="lab">소설 · 장편</div></div>
+    <div class="stop" data-m="webtoon" data-k="webtoon"><div class="bar"></div><div class="lab">웹툰</div></div>
+    <div class="stop" data-m="drama" data-k="drama"><div class="bar"></div><div class="lab">드라마</div></div>
+  </nav>
+
+  <main id="scene" class="scene" aria-live="polite"></main>
+
+  <div class="nav" id="nav">
+    <button type="button" id="back">← 이전</button>
+    <button type="button" class="next" id="next" hidden></button>
+  </div>
+</div>
+
+<div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="원고 보기" hidden>
+  <div class="viewer-box">
+    <div class="viewer-bar"><strong id="viewer-title"></strong><a id="viewer-open" href="#" target="_blank" rel="noopener">새 탭에서 열기</a><button type="button" id="viewer-close">닫기</button></div>
+    <iframe id="viewer-frame" title="원고 보기" allow="autoplay"></iframe>
+    <div class="viewer-note">원고가 보이지 않으면 ‘새 탭에서 열기’를 눌러 주세요.</div>
+  </div>
+</div>
+
+<script>
+/* true on the hosted site: Drive files open in an in-page viewer */
+const USE_POPUP = true;
+/* true on the hosted site: episodes open from the bundled scroll viewer instead of Drive */
+const EPISODE_LOCAL = true;
+/* 웹툰 1~3화 원고 링크 */
+const EPISODE_LINKS = { 1: "https://drive.google.com/file/d/1QTqTyeMajmmrtSw_4N0QxQo9Gd8mghsr/view?usp=drive_link", 2: "https://drive.google.com/file/d/1BBfBu-GDjLLMLJrhYdzdPHCZIClvc51b/view?usp=drive_link", 3: "https://drive.google.com/file/d/1qIVlhEEAh3vnskhwp7V_ifsNNhxecoV6/view?usp=drive_link" };
+const A = (href, label) => `<a href="${href}" target="_blank" rel="noopener">${label}</a>`;
+
+const S = {
+
+  cover: {
+    stop: null, m: "",
+    html: `
+      <div class="cover">
+        <div class="cover-meta"><b>박사과정 지원 포트폴리오</b><span>USC Media Arts + Practice · 2027</span></div>
+        <div class="cover-lead">
+          <p class="cover-kicker">트랜스미디어 스토리텔링 포트폴리오</p>
+          <h1 class="cover-title">닥터 하프문<span>달이 뜨면 찾아오는 구원자</span></h1>
+          <p class="cover-author">Jihyuk Lee</p>
+          <div class="cover-cta"><p class="cover-note">이 이야기는 닥터 차의 여정을 따라 진행됩니다. 매체별 스토리를 즐겨 주세요.</p>
+          <button type="button" class="cover-start" data-go="start">여정 시작하기 →</button></div>
+        </div>
+        <details class="cover-works">
+          <summary><h2>작품으로 바로 가기</h2></summary>
+          <ol><li><button type="button" class="cover-work" data-go="short" style="--c:var(--novel)"><small>단편소설</small><b>「첫 번째 방」</b><span>5,000단어</span></button></li><li><button type="button" class="cover-work" data-go="longInfo" style="--c:var(--novel)"><small>장편소설</small><b>『너를 찾는 시간』</b><span>33,000단어</span></button></li><li><button type="button" class="cover-work" data-go="webtoonInfo" style="--c:var(--webtoon)"><small>웹툰</small><b>〈닥터 하프문〉</b><span>전 50화</span></button></li><li><button type="button" class="cover-work" data-go="drama" style="--c:var(--drama)"><small>TV 드라마</small><b>〈닥터 하프문〉</b><span>50분 × 10부작</span></button></li></ol>
+          <button type="button" class="cover-overview" data-go="summary">요약: 하나의 세계관, 네 가지 매체 →</button>
+        </details>
+        <div class="cover-rights"><span>이 포트폴리오는 USC Media Arts + Practice 2027 PhD 지원을 위한 Jihyuk Lee의 순수 창작물입니다. 저작권은 모두 Jihyuk Lee에게 있습니다.</span><span>© 2026 Jihyuk Lee. All rights reserved.</span></div>
+      </div>`,
+  },
+  start: {
+    stop: null,
+    html: `
+      <div class="story">
+        <p>옛날 옛적, 아끼던 환자를 잃은 수련의가 있었답니다.</p>
+        <p>어느덧 종양내과 전문의가 된 그녀에게 어느 날 기회가 찾아와요.</p>
+        <p>잃었던 그 환자를 다시 만날 수 있는 기회가. 아니, 정확히는 그 환자와 영혼이 같은 한 아이를 구할 기회가.</p>
+        <p>그 아이의 이름은 달푸. 간절한 소원이 있어서 대한민국에 있는 이 의사를 소환했대요.</p>
+      </div>
+      <p class="question">당신이 그 의사라면,<br>환자의 소원을 들어줄 건가요?</p>
+      <div class="choices">
+        <button type="button" class="choice" data-m="novel" data-go="short"><span class="ans">아니요</span><span class="to">단편소설 「첫 번째 방」에 머무르기</span></button>
+        <button type="button" class="choice" data-m="novel" data-go="long"><span class="ans">네</span><span class="to">장편소설 『너를 찾는 시간』으로 이동</span></button>
+      </div>`,
+  },
+
+  short: {
+    stop: "short", m: "novel",
+    html: `
+      <div class="eyebrow"><b>소설 · 단편</b><span>트랜스미디어 · 세계의 기원</span></div>
+      <h1>「첫 번째 방」</h1>
+      <dl class="meta"><div><dt>형식</dt><dd>단편소설 · 5,000단어</dd></div><div><dt>영문</dt><dd>The First Room</dd></div></dl>
+      <p class="logline">아끼던 환자를 잃은 뒤에도, 닥터 차는 그녀를 그리워하며 언젠가 어디선가 다시 만나리라는 희망을 놓지 않는다.</p>
+      <div class="section">
+        <h2>단편소설이라는 매체</h2>
+        <ul class="traits">
+          <li><b>프리퀄</b><span>세계가 시작되기 전의 이야기로 전체의 뿌리를 놓는다</span></li>
+          <li><b>단일 사건</b><span>하나의 사건에 시선을 모은다</span></li>
+          <li><b>압축된 갈등</b><span>짧은 분량 안에 갈등을 응축한다</span></li>
+          <li><b>강렬한 메시지와 여운</b><span>읽고 난 뒤에도 질문이 남는다</span></li>
+        </ul>
+      </div>
+      <div class="section">
+        <h2>시놉시스</h2>
+        <p class="synopsis">세연대학병원 인턴 차하현은 기관 삽관을 시도할 때마다 공황 발작을 겪는다. 치프 레지던트는 이렇게 기본적인 처치에 쩔쩔매는 그녀를 이해하지 못하고 끊임없이 깎아내리고 다그치지만, 그녀에게는 극복하지 못한 깊은 트라우마가 있다. 그러던 어느 날 하현은 환자 김사랑이 병동의 다른 환자들 물건을 훔치는 장면을 목격한다. 회복을 향해 가는 환자들에게서만 훔치는 말기 암 환자, 자신은 끝내 경험할 수 없을 그 길 위에 선 사람들에게서만 훔치는 젊은 여자. 말로 다 할 수 없는 동질감에 하현은 그 일을 보고하지 않는다. 결과에 개의치 않고 하고 싶은 것을 하는 사랑의 모습이 하현에게는 부럽다.</p>
+        <p class="synopsis">두 사람은 병동의 처치실에서 자꾸 마주치며 친구가 되고, 하현은 그 우정을 통해 마침내 자신의 부서진 꿈과 마주한다. 교통사고로 왼손이 으스러지기 전까지, 그녀는 바이올리니스트를 꿈꿨다. 그리고 사랑이 심정지에 빠진다. 그 자리에 있는 의사는 하현뿐. 두려움과 마주할 수밖에 없었던 하현은 처음으로 삽관에 성공한다.</p>
+        <p class="synopsis">그날 하현은 사랑의 목숨을 구했지만, 암으로부터는 구하지 못했다. 사랑이 세상을 떠난 뒤, 하현은 둘이 가까워졌던 처치실로 돌아가 사랑의 유품을 정리하며 조용히 다짐한다. 사랑이 어디에 있든, 자신이 필요하다면 그곳으로 가겠다고.</p>
+      </div>
+      <div class="section">
+        <h2>자료</h2>
+        <div class="links"><a href="https://drive.google.com/file/d/19ikB9h0_GiCGO7mWMHqX24-qSgyAJP3p/view?usp=drive_link" target="_blank" rel="noopener">도입부 발췌 (영문, 1p)</a><a href="https://drive.google.com/file/d/1WTKv05PPmx9cQA05YXYuS4zr5oJ27wsK/view?usp=drive_link" target="_blank" rel="noopener">원고 (국문, 11p)</a></div>
+      </div>`,
+  },
+
+  long: {
+    stop: "long", m: "novel", next: "q2", nextLabel: "다음",
+    html: `
+      <div class="eyebrow"><b>소설 · 장편</b><span>『너를 찾는 시간』</span></div>
+      <div class="story">
+        <p>달이 뜨는 나라라 하여 이월국. 최고 무술사가 되어야만 사회 권력층이 될 수 있는 무술지상주의국에서, 무술 둔재로 태어난 아이 달푸.</p>
+        <p>달푸는 소중한 친구 소율이를 전쟁터에서 잃고, 소율이를 살려내기 위해 전설의 신물 ‘신월피리’를 불어 구원자를 소환해요.</p>
+        <p>그때 소환된 것이 대한민국의 종양내과의 차하현이죠.</p>
+        <p>아직 달푸가 자신이 잃었던 환자라는 걸 알아보지 못한 하현은 어떻게든 대한민국으로 돌아가려고 하지만, 소환자의 소원을 반드시 들어줘야만 돌아갈 수 있음을 깨닫게 되고.</p>
+        <p>그렇게 달푸와 하현의 여정이 시작됩니다.</p>
+      </div>
+      <button type="button" class="more" data-go="longInfo">더보기 —『너를 찾는 시간』 →</button>`,
+  },
+
+  q2: {
+    stop: "long", m: "novel",
+    html: `
+      <p class="question">혹시 하현이 여정에서 만나게 되는<br>두 왕자와의 로맨스가 궁금한가요?</p>
+      <div class="choices">
+        <button type="button" class="choice" data-m="novel" data-go="longInfo"><span class="ans">아니요</span><span class="to">장편소설을 더 보겠습니다</span></button>
+        <button type="button" class="choice" data-m="webtoon" data-go="webtoon"><span class="ans">네</span><span class="to">웹툰 〈닥터 하프문〉으로 이동</span></button>
+      </div>`,
+  },
+
+  longInfo: {
+    stop: "long", m: "novel",
+    html: `
+      <div class="eyebrow"><b>소설 · 장편</b><span>트랜스미디어 · 달푸의 시점</span></div>
+      <h1>『너를 찾는 시간』</h1>
+      <dl class="meta"><div><dt>형식</dt><dd>중장편 · 33,000단어</dd></div><div><dt>장르</dt><dd>청소년 성장소설</dd></div><div><dt>영문</dt><dd>In Search of You</dd></div></dl>
+      <p class="logline">전쟁 중 잃어버린 친구를 찾는 여정에서, 달푸는 반대로 자기 자신을 찾게 된다.</p>
+      <div class="section">
+        <h2>장편소설이라는 매체</h2>
+        <ul class="traits">
+          <li><b>인물의 내면과 성장</b><span>결핍과 변화를 오래 들여다본다</span></li>
+          <li><b>자유로운 시간</b><span>현재와 과거를 오가며 서사를 재배열한다</span></li>
+          <li><b>교차 시점</b><span>여러 인물의 목소리를 고르게 교차한다</span></li>
+          <li><b>내적 갈등의 서사</b><span>외적 안타고니스트 없이도 긴 서사를 끌고 간다</span></li>
+        </ul>
+      </div>
+      <div class="section">
+        <h2>시놉시스</h2>
+        <p class="synopsis">달푸는 이월국 4대 가문에서 태어난 아이들 가운데 가장 재능 없고 가장 가망 없는 아이다. 달이 두 개 뜨는 이 나라에는 시각, 청각, 후각, 촉각 같은 타고난 재능이 여럿 있고, 그 모두가 최고의 무사가 되는 데 쓰인다. 달푸는 그 길이 자신의 것이 아님을 오래전에 받아들였다.</p>
+        <p class="synopsis">그러다 전쟁터의 혼란 속에서 가장 가까운 친구 소율을 잃는다. 절박해진 달푸는 신월피리를 불어 구원자를 간청한다. 정신을 차려 보니 그녀는 전쟁터 반대편, 낯선 사람의 몸에 갇혀 있다. 친구를 되찾아야 한다는 일념 하나로 이월국을 샅샅이 뒤진 끝에 단서는 황궁으로 이어진다. 그곳에서는 웬 낯선 여자가 달푸의 몸으로 활보하며 달푸 행세를 하고 있다. 이건 그녀가 바란 구원자가 아니다!</p>
+        <p class="synopsis">달푸는 영혼이 뒤바뀐 이 낯선 여자에게 따진다. 남의 몸을 이렇게 훔쳐 가다니, 대체 당신이 뭔데? 여자는 자신이 ‘한국’이라는 곳에서 온 뛰어난 치유사이며, 중요한 자리에 서기 위해 어떻게든 돌아가야 한다며 도움을 청한다. 달푸는 소율을 찾는 일을 도와준다는 조건으로만 응한다. 그렇게 절박함과 야망, 그리고 공공의 선을 향한 마음에서 태어난 두 사람의 엉뚱한 동행이 시작된다.</p>
+      </div>
+      <div class="section">
+        <h2>자료</h2>
+        <div class="links"><span>발췌 원고 준비 중</span></div>
+      </div>
+      <div class="section">
+        <h2>크로스미디어 확장</h2>
+        <div class="tags"><span class="tag">웹소설</span><span class="tag">영화</span></div>
+      </div>`,
+  },
+
+  webtoon: {
+    stop: "webtoon", m: "webtoon", next: "q3", nextLabel: "다음",
+    html: `
+      <div class="eyebrow"><b>웹툰</b><span>〈닥터 하프문: 달이 뜨면 찾아오는 구원자〉</span></div>
+      <div class="story">
+        <p>최연소 교수 임용을 앞둔 천재 종양내과의 차하현. 눈 떠 보니 달이 두 개 뜨는 이상한 나라에 와 있다?!</p>
+        <p>무술지상주의 국가인 이월국에서 사람 살리는 의술은 필요 없단다. 의술 따윈 천민들이나 행하는 거란다!</p>
+        <p>한시바삐 대한민국으로 돌아가려는 하현. 그러나 독에 당한 황태자 태강을 구하면서 황태자 독살 미수 사건에 휘말리게 되고…</p>
+        <p>태강을 질투하는 그의 동생 주강과의 삼각관계가 시작된다.</p>
+      </div>
+      <button type="button" class="more" data-go="webtoonInfo">더보기 —〈닥터 하프문: 달이 뜨면 찾아오는 구원자〉 →</button>`,
+  },
+
+  q3: {
+    stop: "webtoon", m: "webtoon",
+    html: `
+      <p class="question">지금까지 보신 단편소설, 장편소설, 웹툰의 플롯이 하나로 합쳐진 드라마를 보시겠습니까?</p>
+      <div class="choices">
+        <button type="button" class="choice" data-m="webtoon" data-go="webtoonInfo"><span class="ans">아니요</span><span class="to">웹툰을 더 보겠습니다</span></button>
+        <button type="button" class="choice" data-m="drama" data-go="drama"><span class="ans">네</span><span class="to">드라마 〈닥터 하프문〉으로 이동</span></button>
+      </div>`,
+  },
+
+  webtoonInfo: {
+    stop: "webtoon", m: "webtoon",
+    html: `
+      <div class="eyebrow"><b>웹툰</b><span>트랜스미디어 · 하현의 시점</span></div>
+      <h1>〈닥터 하프문: 달이 뜨면 찾아오는 구원자〉</h1>
+      <dl class="meta"><div><dt>형식</dt><dd>웹툰 · 전 50화</dd></div><div><dt>장르</dt><dd>로맨스 판타지</dd></div><div><dt>역할</dt><dd>글작가</dd></div></dl>
+      <p class="logline">대한민국의 천재 의사 차하현과 무술의 나라 이월국의 황태자 태강, 적에서 연인이 되는 두 사람의 상호 구원 로맨스.</p>
+      <div class="section">
+        <h2>웹툰이라는 매체</h2>
+        <ul class="traits">
+          <li><b>장르 문법과 대중성</b><span>특정 타깃을 향해 장르 서사의 문법을 따른다</span></li>
+          <li><b>속마음의 시각화</b><span>내면의 목소리로 서사를 끌고 간다</span></li>
+          <li><b>고정된 시점</b><span>주인공 1인 중심에 보조 인물 1~2명의 목소리를 더한다</span></li>
+          <li><b>4인 이내의 케미</b><span>안타고니스트와의 대립을 시각화해 즉각적인 재미를 준다</span></li>
+        </ul>
+      </div>
+      <div class="section">
+        <h2>시놉시스</h2>
+        <p class="synopsis">닥터 차는 세계 종양학계에서 거침없이 떠오르는 스타다. 그러나 그 천재성 뒤에는 만성 불면에서 비롯된 각성제 중독이 숨어 있다. 교수 임용 면접 당일 아침, 그녀는 꿈에서 깬다. 알 것 같지만 누군지 떠오르지 않는 한 남자가 죽음 직전의 그녀를 구해 주는 꿈. 늘 그렇듯 알약을 삼키는 순간 코드 블루가 울리고, 하현은 중환자실을 향해 복도를 내달린다. 바로 그때, 그녀의 심장이 멈춘다.</p>
+        <p class="synopsis">눈을 떠 보니 하현은 붉은 달 두 개가 걸린 전쟁터 한복판에 누워 있다. 이곳은 이월국. 최고의 무사만이 권력을 쥘 수 있고, 치유는 설 자리가 없는 나라. 패배한 병사에게는 스스로 목숨을 끊는 것만이 죽음까지 명예를 지키는 길이다. 그런 사정을 알 리 없는 하현은 죽어 가는 병사를 살리려 하고, 이 일로 이월국의 황태자 태강의 분노를 산다. 그런데 말다툼 내내 태강은 그녀를 낯선 이름으로 부른다. 내려다본 손과 몸은 그녀의 것이 아니다.</p>
+        <p class="synopsis">하현은 전혀 다른 사람, 태강의 정혼자 달푸의 몸에서 깨어난 것이다. 연애 한 번 해 본 적 없는데 약혼이라니! 태강의 동생 주강은 달푸가 달라졌음을 단번에 알아채고 달콤한 말을 속삭인다. 그는 형의 왕좌뿐 아니라 정혼자까지 손에 넣으려 한다. 10년 전 황후의 죽음에 얽힌 진실을 밝히는 데 협력하면 한국으로 돌아가는 길을 알려 주겠다는 그의 제안에 하현은 흔들린다. 하지만 태강이 머릿속을 떠나지 않는다. 결국 하현은 치유의 금기를 깨고, 며칠째 그를 갉아먹던 느린 독을 치료한다. 살려야만 했다. 정이 들어서도, 마음이 흔들려서도 아니다. 절대로!</p>
+        <p class="synopsis">독살범을 쫓을수록 하현은 이월국과 적국을 둘러싼 정치와 음모 깊숙이 빨려 든다. 그리고 경쟁국 흑월국과 이월국의 소외된 하층민 사이의 불온한 동맹을 밝혀낸다. 그들은 이월국을 통째로 삼키려 한다. 한편 주강과 태강 사이에서 아슬아슬한 줄타기를 하던 하현은, 헝클어진 하현의 몸을 하고 돌아온 진짜 달푸 때문에 한 방 크게 얻어맞는다. 사랑을 믿지 못하는 하현, 마음을 숨기지 못하는 태강, 그 틈을 노리는 주강. 네 사람의 얽힌 관계는 이월국을 배신한 설계자의 정체를 밝히는 여정 내내 요동친다.</p>
+        <div class="tags"><span class="tag">적에서 연인으로</span><span class="tag">상호 구원</span><span class="tag">영혼 체인지</span><span class="tag">드라마 원안에서 발전</span></div>
+      </div>
+      <div class="section">
+        <h2>자료</h2>
+        <div class="links"><a href="https://drive.google.com/file/d/1TMgvK243s38lV3e1WNpjtpS0VCf4rhJE/view?usp=drive_link" target="_blank" rel="noopener">시놉시스 (국문)</a><a href="https://drive.google.com/file/d/11vXS3oiRg9Du6tnNwtPzUQEYUkzn1bVv/view?usp=drive_link" target="_blank" rel="noopener">캐릭터 시트 (국문)</a><span id="eps" style="display: contents"></span></div>
+      </div>
+      <div class="section">
+        <h2>크로스미디어 확장</h2>
+        <div class="tags"><span class="tag">숏폼 드라마</span></div>
+      </div>`,
+  },
+
+  drama: {
+    stop: "drama", m: "drama", next: "end", nextLabel: "여정 마치기",
+    html: `
+      <div class="eyebrow"><b>드라마</b><span>크로스미디어의 원형 · 세 서사의 결합</span></div>
+      <h1>〈닥터 하프문: 달이 뜨면 찾아오는 구원자〉</h1>
+      <dl class="meta"><div><dt>형식</dt><dd>TV 드라마 · 50분 × 10부작</dd></div><div><dt>장르</dt><dd>판타지 메디컬</dd></div><div><dt>역할</dt><dd>극작가</dd></div></dl>
+      <p class="logline">대한민국의 천재 심장외과의 닥터 차가 이월국의 어설픈 치유술사 달푸의 몸에 들어가, 무자비한 권력 다툼의 희생양이 된 친구를 구하려는 그녀의 여정에 휘말린다.</p>
+      <div class="section">
+        <h2>드라마라는 매체</h2>
+        <ul class="traits">
+          <li><b>복합 서사</b><span>여러 인물에게 회차별 시점을 부여한다</span></li>
+          <li><b>다양한 인물</b><span>한 회차 안에서도 시점을 바꿔 구성한다</span></li>
+          <li><b>갈등의 전면화</b><span>강력한 안타고니스트와의 대립이 표면에 드러난다</span></li>
+          <li><b>성찰과 재미</b><span>웹툰의 대립과 장편의 성찰을 함께 담는다</span></li>
+        </ul>
+      </div>
+      <div class="section">
+        <h2>시놉시스</h2>
+        <p class="synopsis">태초에 은사의 샘이 있었다. 모든 치유술의 근원인 이 성물은 일부 사람들에게 비범한 시각, 청각, 후각, 촉각을 내려 주었다. 그 감각이 얼마나 예민한지, 이들은 신경을 보고, 영혼의 목소리를 듣고, 염증의 냄새를 맡고, 손끝으로 피부 너머 근육과 뼈의 결함을 느꼈다. 우리 세계로 치면 각각 신경외과, 정신건강의학과, 내과, 정형외과다. 힘이 있는 곳에는 권력자가 있는 법. 이월국(二月國)에서는 치유탑을 중심으로 모인 네 치유 가문이 500년 넘게 서로를 견제하며 전통을 지켜 왔다. 그러던 어느 날 저주처럼 은사의 샘이 말라붙고, 혼돈의 시대가 찾아온다. 치유탑의 권위는 흔들리고, 백성의 병은 깊어지고, 왕실은 민심을 잃는다.</p>
+        <p class="synopsis">몰락 직전의 향 가문. 그 후계자 달푸는 하늘 높은 기대에 한참 못 미치는 집안의 골칫덩이다. 그녀를 더욱 비참하게 하는 것은 백성의 영웅들을 배출한 해 가문의 천재, 소율을 향한 짝사랑이다. 사랑과 뒤엉킨 오랜 원망 끝에, 달푸는 전국 순회 치유를 떠나는 소율에게 모진 말을 던진다. “다시는 돌아오지 마.” 그때는 몰랐다. 정체 모를 세력이 보낸 늑대개 떼에 소율의 가문이 몰살당하고, 소율마저 흔적도 없이 사라지게 될 줄은.</p>
+        <p class="synopsis">배후가 있다. 하지만 누구일까? 왕좌를 노리는 왕자? 공주? 아니면 경쟁 치유탑의 수장? 믿을 사람이 아무도 남지 않은 달푸는 성물 신월피리에 매달린다. 그녀의 절박한 주문이 소환한 것은 ‘대한민국’이라는 머나먼 곳에서 온 심장 치유사, 차하현. 소환 직전 하현은 수술 중이었다. 깨어나 보니 그는 낯선 옷차림의 사람들에게 둘러싸인 높은 첨탑 안에 있고, 더 기이하게도 달푸 향이라는 소녀의 몸에 들어 있다. 최연소 교수 임용을 코앞에 두고 소환된 하현은 하루라도 빨리 돌아가고 싶지만, 집으로 가는 유일한 길은 소환자의 소원을 들어주는 것뿐인 듯하다. 그렇게 한 몸에 깃든 두 영혼의, 소율을 찾아 이월국을 가로지르는 판타지 메디컬 여정이 시작된다.</p>
+        <div class="tags"><span class="tag">원안 · 웹툰과 소설로 분기</span><span class="tag">한 몸 두 영혼</span></div>
+      </div>
+      <div class="section">
+        <h2>자료</h2>
+        <div class="links"><a href="https://drive.google.com/file/d/14oy2F3s9I2kPaTHU0KPqVmHd4oxXLsO7/view?usp=drive_link" target="_blank" rel="noopener">시놉시스 · 트리트먼트 · 1~2화 대본 (국문)</a></div>
+      </div>`,
+  },
+
+  end: {
+    stop: "drama", m: "drama", end: true,
+    html: `
+      <div class="eyebrow"><b>드라마</b><span>여정의 끝</span></div>
+      <h1>This is the end of Dr. Cha’s journey.<br>Thanks!</h1>
+      <div class="choices">
+        <button type="button" class="choice" data-m="drama" data-go="summary"><span class="ans">요약</span><span class="to">하나의 세계관, 네 가지 매체</span></button>
+        <button type="button" class="choice" data-m="drama" data-go="bible"><span class="ans">부록</span><span class="to">세계관: 이월국</span></button>
+      </div>`,
+  },
+
+  summary: {
+    stop: null, m: "drama", next: "bible", nextLabel: "부록", nextSub: "세계관: 이월국",
+    html: `
+      <div class="eyebrow"><b>요약</b><span>포트폴리오의 구조</span></div>
+      <h1>하나의 세계관, 네 가지 매체</h1>
+      <p class="sum-sub">매체마다 다른 이야기로 하나의 세계를 완성하는 포트폴리오</p>
+      <div class="sum-wrap"><svg class="sum-svg" viewBox="0 0 680 626" role="img" aria-label="도식: 가운데 드라마에서 단편소설, 장편소설, 웹툰으로 분기하고, 세 작품은 트랜스미디어 원으로 이어진다." xmlns="http://www.w3.org/2000/svg"><circle cx="340" cy="310" r="225" fill="none" stroke="var(--novel)" stroke-width="3"/><line x1="340" y1="175" x2="340" y2="220" stroke="var(--drama)" stroke-width="2.5"/><line x1="262" y1="355" x2="250" y2="362" stroke="var(--drama)" stroke-width="2.5"/><line x1="418" y1="355" x2="430" y2="362" stroke="var(--drama)" stroke-width="2.5"/><line x1="98" y1="492" x2="98" y2="516" stroke="var(--faint)" stroke-width="1.2" stroke-dasharray="4 4"/><line x1="188" y1="492" x2="188" y2="516" stroke="var(--faint)" stroke-width="1.2" stroke-dasharray="4 4"/><rect x="48" y="516" width="100" height="30" rx="15" fill="var(--tint-novel)"/><text class="s-chip" x="98.0" y="535.5" text-anchor="middle" fill="var(--novel)">웹소설</text><rect x="160" y="516" width="56" height="30" rx="15" fill="var(--tint-novel)"/><text class="s-chip" x="188.0" y="535.5" text-anchor="middle" fill="var(--novel)">영화</text><line x1="535" y1="492" x2="535" y2="516" stroke="var(--faint)" stroke-width="1.2" stroke-dasharray="4 4"/><rect x="470" y="516" width="130" height="30" rx="15" fill="var(--tint-webtoon)"/><text class="s-chip" x="535.0" y="535.5" text-anchor="middle" fill="var(--webtoon)">숏폼 드라마</text><g class="s-card" data-go="short" tabindex="0" role="link" aria-label="01 소설 · 단편 「첫 번째 방」"><rect x="235" y="35" width="210" height="140" rx="9" fill="var(--surface)" stroke="var(--novel)" stroke-width="1.6"/><path d="M235 71 V44 Q235 35 244 35 H436 Q445 35 445 44 V71 Z" fill="var(--novel)"/><text class="s-band" x="249" y="58.5" fill="#ffffff">01  |  소설 · 단편</text><text class="s-title" x="340.0" y="97" text-anchor="middle" fill="var(--ink)">「첫 번째 방」</text><text class="s-key" x="340.0" y="117" text-anchor="middle" fill="var(--sub)">프리퀄 · 단일 사건</text><text class="s-key" x="340.0" y="133" text-anchor="middle" fill="var(--sub)">압축된 갈등 · 강렬한 여운</text><rect class="s-btn" x="292.0" y="145" width="96" height="20" rx="10" fill="var(--surface)" stroke="var(--novel)" stroke-width="1"/><text class="s-btxt" x="340.0" y="158.7" text-anchor="middle" fill="var(--novel)">작품 보기 →</text></g><g class="s-card" data-go="longInfo" tabindex="0" role="link" aria-label="02 소설 · 장편 『너를 찾는 시간』"><rect x="40" y="352" width="210" height="140" rx="9" fill="var(--surface)" stroke="var(--novel)" stroke-width="1.6"/><path d="M40 388 V361 Q40 352 49 352 H241 Q250 352 250 361 V388 Z" fill="var(--novel)"/><text class="s-band" x="54" y="375.5" fill="#ffffff">02  |  소설 · 장편</text><text class="s-title" x="145.0" y="414" text-anchor="middle" fill="var(--ink)">『너를 찾는 시간』</text><text class="s-key" x="145.0" y="434" text-anchor="middle" fill="var(--sub)">인물의 내면 · 성장</text><text class="s-key" x="145.0" y="450" text-anchor="middle" fill="var(--sub)">교차 시점 · 세계관 빌드업</text><rect class="s-btn" x="97.0" y="462" width="96" height="20" rx="10" fill="var(--surface)" stroke="var(--novel)" stroke-width="1"/><text class="s-btxt" x="145.0" y="475.7" text-anchor="middle" fill="var(--novel)">작품 보기 →</text></g><g class="s-card" data-go="webtoonInfo" tabindex="0" role="link" aria-label="03 웹툰 〈닥터 하프문〉"><rect x="430" y="352" width="210" height="140" rx="9" fill="var(--surface)" stroke="var(--webtoon)" stroke-width="1.6"/><path d="M430 388 V361 Q430 352 439 352 H631 Q640 352 640 361 V388 Z" fill="var(--webtoon)"/><text class="s-band" x="444" y="375.5" fill="#ffffff">03  |  웹툰</text><text class="s-title" x="535.0" y="414" text-anchor="middle" fill="var(--ink)">〈닥터 하프문〉</text><text class="s-key" x="535.0" y="434" text-anchor="middle" fill="var(--sub)">장르성 강화 · 갈등의 시각화</text><text class="s-key" x="535.0" y="450" text-anchor="middle" fill="var(--sub)">고정 시점 · 4인 이내의 케미</text><rect class="s-btn" x="487.0" y="462" width="96" height="20" rx="10" fill="var(--surface)" stroke="var(--webtoon)" stroke-width="1"/><text class="s-btxt" x="535.0" y="475.7" text-anchor="middle" fill="var(--webtoon)">작품 보기 →</text></g><g class="s-card" data-go="drama" tabindex="0" role="link" aria-label="04 · 드라마 〈닥터 하프문〉"><circle cx="340" cy="310" r="90" fill="var(--drama-fill)"/><text class="s-dtitle" x="340" y="273" text-anchor="middle" fill="#ffffff">04 · 드라마</text><text class="s-dsub" x="340" y="293" text-anchor="middle" fill="#ffffff">〈닥터 하프문〉</text><line x1="282" y1="305" x2="398" y2="305" stroke="#8a94ad" stroke-width="0.8"/><text class="s-dkey" x="340" y="323" text-anchor="middle" fill="#d5dae6">복합 서사 · 다양한 인물</text><text class="s-dkey" x="340" y="339" text-anchor="middle" fill="#d5dae6">갈등의 전면화 · 성찰과 재미</text><rect x="292" y="352" width="96" height="20" rx="10" fill="var(--drama-fill)" stroke="#ffffff" stroke-width="1"/><text class="s-btxt" x="340" y="365.7" text-anchor="middle" fill="#ffffff">작품 보기 →</text></g><line x1="20" y1="590" x2="50" y2="590" stroke="var(--drama)" stroke-width="2.5"/><text class="s-leg" x="58" y="594" fill="var(--sub)">크로스미디어 · 드라마에서 분기</text><line x1="340" y1="590" x2="370" y2="590" stroke="var(--faint)" stroke-width="1.2" stroke-dasharray="4 4"/><text class="s-leg" x="378" y="594" fill="var(--sub)">크로스미디어 · 향후 확장 포맷</text><line x1="20" y1="608" x2="50" y2="608" stroke="var(--novel)" stroke-width="3"/><text class="s-leg" x="58" y="612" fill="var(--sub)">트랜스미디어 · 세 작품이 서로 다른 이야기로 한 세계를 완성</text></svg></div>
+      <p class="sum-hint">옆으로 밀어 도식 전체를 보세요.</p>`,
+  },
+
+  bible: {
+    stop: null, m: "drama", next: "start", nextReset: true, nextLabel: "처음부터 다시", nextSub: "닥터 차의 여정 다시 떠나기",
+    html: `
+      <div class="eyebrow"><b>부록</b><span>세계관</span></div>
+      <h1>이월국 <span class="han">(二月國)</span></h1>
+
+      <section class="bible-sec">
+        <h2><span class="num">Ⅰ</span>이월국</h2>
+        <p class="synopsis">두 개의 달이 뜨는 나라, 이월국(<span class="han">二月國</span>)은 쌍둥이 달에서 이름을 따왔다. 이월국은 무력이 곧 사회적 지위와 직결되는 무술 국가다. 타고난 재능은 국가의 것이며 오직 무술에만 쓰인다. 그래서 죽이는 기술은 명예가 되고 살리는 기술은 금기가 되어, 의술을 행하는 이들은 천민 취급을 받는다. 우리 시대, 우리 세계의 의사 차하현이 이월국에 소환되면서 그녀의 여정이 시작된다.</p>
+      </section>
+
+      <section class="bible-sec">
+        <h2><span class="num">Ⅱ</span>술력과 4대 가문</h2>
+        <p class="synopsis">이월국의 일부 사람들은 술력(<span class="han">術力</span>)이라 불리는 타고난 초능력을 지니고 태어나며, 이들을 술사라 부른다. 술력의 네 갈래마다 하나의 대가문이 있고, 각 가문은 하나의 감각을 극한까지 연마해 왔다.</p>
+        <div class="houses">
+          <div class="house dalfu"><span class="hj">香</span><b>향 가문</b><span>후각</span><span class="tagline">달푸의 가문</span></div>
+          <div class="house"><span class="hj">輝</span><b>휘 가문</b><span>시각</span></div>
+          <div class="house"><span class="hj">脈</span><b>맥 가문</b><span>촉각</span></div>
+          <div class="house"><span class="hj">韻</span><b>운 가문</b><span>청각</span></div>
+        </div>
+        <p class="synopsis">황실이 이 모두를 다스리며, 4대 가문 어디에도 속하지 않은 술사들은 사회의 변방으로 밀려난다. 달푸는 향 가문에서 비범한 후각을 지니고 태어났지만, 싸움에는 재능이 전혀 없다. 대신 그녀의 재능은 생명을 살리는 쪽으로 기울어 있다. 무술의 세계에서 이 재능으로 어떻게 자기 자리를 쟁취할 것인가가 달푸 이야기의 핵심 긴장이다.</p>
+      </section>
+
+      <section class="bible-sec">
+        <h2><span class="num">Ⅲ</span>신월피리</h2>
+        <p class="synopsis">간절한 소원에 응답해 다른 세계의 존재를 소환하는 성물. 소원을 들어주는 대가로, 소원을 빈 자가 가장 소중히 여기는 것을 가져간다. 달푸는 이 피리를 불어 구원자 하현을 소환한다.</p>
+      </section>
+
+      <section class="bible-sec">
+        <h2><span class="num">Ⅳ</span>달의 의미</h2>
+        <p class="synopsis">이 세계에서 달은 완성이 아니라 되어 감의 상징이다. 상현(<span class="han">上弦</span>)은 보름을 향해 차오르지만 끝없이 스스로를 의심한다. 하현(<span class="han">下弦</span>)은 그믐을 향해 이지러지지만 끝까지 운명과 싸운다. 정반대처럼 보이지만 둘은 하나의 감정에서 자란다. 아직 무언가가 되지 못한 존재의 불안이다.</p>
+        <div class="moons">
+          <div class="moon-card"><span class="moon waxing" aria-hidden="true"></span><div><b>상현 · <span class="han">上弦</span> · 달푸</b><span>가진 것이 없어, 채워지며 자란다.</span></div></div>
+          <div class="moon-card"><span class="moon waning" aria-hidden="true"></span><div><b>하현 · <span class="han">下弦</span> · 하현</b><span>모든 것을 가져, 비워지며 자란다.</span></div></div>
+        </div>
+        <p class="synopsis">아무것도 가진 것 없는 달푸는 상현달이다. 모든 것을 가진 천재 의사 하현은 그 이름(<span class="han">下弦</span>)이 말해 주듯 하현달이다. 달푸는 채워지며 자라고, 하현은 비워지며 자란다. 하현은 자존심의 벽을 뛰어넘지 않는다. 사랑이 그 벽을 무너뜨린다. 달은 비워져야 다시 차오를 수 있다. 그래서 이 세계에서 이지러지고 닳는다는 것은 사라지는 것이 아니라, 다음 차오름을 위해 자리를 비우는 일이다.</p>
+      </section>
+
+`,
+  },
+};
+
+const order = ["short", "long", "webtoon", "drama"];
+const scene = document.getElementById("scene");
+const backBtn = document.getElementById("back");
+const nextBtn = document.getElementById("next");
+let trail = [];
+let current = "start";
+const seen = new Set();
+
+const FIT_SCENES = ["short", "longInfo", "webtoonInfo", "drama", "bible"];
+/* The synopsis box always shows at least half of the synopsis; if the screen can't hold that, the page scrolls a little instead. */
+function sizeSynopsis() {
+  const syn = scene.querySelector(".syn-scroll");
+  if (!syn) return;
+  const h2 = syn.querySelector("h2");
+  const body = syn.querySelector(".syn-body");
+  const half = Math.ceil(body.scrollHeight * 0.5 + (h2 ? h2.offsetHeight + 10 : 0));
+  syn.style.setProperty("--syn-min", half + "px");
+}
+window.addEventListener("resize", sizeSynopsis);
+if (document.fonts) document.fonts.ready.then(sizeSynopsis);
+let curNoNext = false;
+function render(id, push, noNext) {
+  if (push) trail.push(current);
+  current = id;
+  curNoNext = !!noNext;
+  const s = S[id];
+  scene.dataset.m = s.m || "";
+  scene.className = "scene" + (s.end ? " end" : "");
+  scene.innerHTML = s.html;
+  document.querySelector(".path").hidden = id === "cover";
+  document.getElementById("home-btn").hidden = id === "cover";
+  document.getElementById("nav").hidden = id === "cover";
+  /* Work pages fit one screen: the synopsis scrolls inside its own box instead of the page. */
+  const fit = FIT_SCENES.includes(id);
+  document.body.classList.toggle("fit", fit);
+  document.body.classList.toggle("fit-summary", id === "summary");
+  document.body.classList.toggle("fit-bible", id === "bible");
+  document.body.classList.toggle("on-start", ["start", "q2", "q3"].includes(id));
+  document.body.classList.toggle("on-long", id === "long" || id === "webtoon");
+  const syn = fit && scene.querySelector(".synopsis")?.closest(".section");
+  if (syn) {
+    const body = document.createElement("div");
+    body.className = "syn-body";
+    body.append(...[...syn.children].filter((el) => el.tagName !== "H2"));
+    syn.append(body);
+    syn.classList.add("syn-scroll");
+    sizeSynopsis();
+  }
+  void scene.offsetWidth;
+  scene.classList.add("enter");
+
+  if (s.stop) seen.add(s.stop);
+  document.querySelectorAll(".stop").forEach((el) => {
+    el.classList.toggle("now", el.dataset.k === s.stop);
+    el.classList.toggle("seen", seen.has(el.dataset.k) && el.dataset.k !== s.stop);
+  });
+
+  backBtn.hidden = trail.length === 0;
+  if (s.next && !noNext) {
+    nextBtn.hidden = false;
+    nextBtn.innerHTML = s.nextLabel + " →" + (s.nextSub ? `<small>${s.nextSub}</small>` : "");
+  } else {
+    nextBtn.hidden = true;
+  }
+
+  const eps = document.getElementById("eps");
+  if (eps) {
+    eps.innerHTML = [1, 2, 3].map((n) => EPISODE_LOCAL
+      ? `<a href="ep${n}.html" data-local-viewer target="_blank" rel="noopener">${n}화 원고</a>`
+      : (EPISODE_LINKS[n] ? A(EPISODE_LINKS[n], `${n}화 원고`) : `<span>${n}화 원고</span>`)).join("");
+  }
+  /* Phones: the summary diagram scrolls sideways; start it centered on the drama circle. */
+  const sw = scene.querySelector(".sum-wrap");
+  if (sw) sw.scrollLeft = (sw.scrollWidth - sw.clientWidth) / 2;
+  window.scrollTo({ top: 0 });
+}
+
+scene.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-go]");
+  if (!b) return;
+  if (b.dataset.reset) { trail = []; seen.clear(); render(b.dataset.go, false); return; }
+  render(b.dataset.go, true, b.classList.contains("more"));
+});
+document.getElementById("home-btn").addEventListener("click", () => { if (current !== "cover") render("cover", true); });
+nextBtn.addEventListener("click", () => {
+  const s = S[current];
+  if (!s.next) return;
+  if (s.nextReset) { trail = []; seen.clear(); render(s.next, false); return; }
+  render(s.next, true);
+});
+backBtn.addEventListener("click", () => { if (trail.length) { const prev = trail.pop(); render(prev, false); } });
+
+
+const viewer = document.getElementById("viewer");
+const vFrame = document.getElementById("viewer-frame");
+function closeViewer() { viewer.hidden = true; vFrame.src = "about:blank"; document.body.classList.remove("viewer-open"); }
+document.addEventListener("click", (e) => {
+  if (!USE_POPUP) return;
+  const a = e.target.closest('a[href*="drive.google.com/file/d/"], a[data-local-viewer]');
+  if (!a || a.id === "viewer-open") return;
+  e.preventDefault();
+  if (a.hasAttribute("data-local-viewer")) {
+    vFrame.src = a.getAttribute("href");
+  } else {
+    const m = a.href.match(/\/file\/d\/([^/?#]+)/);
+    vFrame.src = "https://drive.google.com/file/d/" + m[1] + "/preview";
+  }
+  document.getElementById("viewer-open").href = a.href;
+  document.getElementById("viewer-title").textContent = a.textContent;
+  viewer.hidden = false;
+  document.body.classList.add("viewer-open");
+  document.getElementById("viewer-close").focus();
+});
+document.getElementById("viewer-close").addEventListener("click", closeViewer);
+viewer.addEventListener("click", (e) => { if (e.target === viewer) closeViewer(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !viewer.hidden) closeViewer(); });
+
+/* Language switch: carry the current scene, back history and visited media to the other language's page. */
+const LANG_KEY = "drcha-journey-state";
+const langSwitch = document.getElementById("lang-switch");
+if (langSwitch) {
+  langSwitch.addEventListener("click", () => {
+    try { sessionStorage.setItem(LANG_KEY, JSON.stringify({ current, trail, seen: [...seen], noNext: curNoNext })); } catch (err) {}
+  });
+}
+function restoreState() {
+  try {
+    const raw = sessionStorage.getItem(LANG_KEY);
+    if (!raw) return false;
+    sessionStorage.removeItem(LANG_KEY);
+    const st = JSON.parse(raw);
+    if (!st || !S[st.current]) return false;
+    trail = (st.trail || []).filter((k) => S[k]);
+    (st.seen || []).forEach((k) => seen.add(k));
+    render(st.current, false, st.noNext);
+    return true;
+  } catch (err) { return false; }
+}
+scene.addEventListener("keydown", (e) => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  const g = e.target.closest("g[data-go]");
+  if (!g) return;
+  e.preventDefault();
+  render(g.dataset.go, true);
+});
+if (!restoreState()) render("cover", false);
+</script>
+</body>
+</html>
