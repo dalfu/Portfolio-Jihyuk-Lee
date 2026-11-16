@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<style>[hidden]{display:none!important}img{max-width:100%}body{margin:0}</style>
+<style>[hidden]{display:none!important}img{max-width:100%}body{margin:0}body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}img{-webkit-user-drag:none}</style>
 <title>닥터 차의 여정</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
@@ -745,6 +745,10 @@ scene.addEventListener("keydown", (e) => {
   render(g.dataset.go, true);
 });
 if (!restoreState()) render("cover", false);
+</script>
+<script>
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('dragstart', e => e.preventDefault());
 </script>
 </body>
 </html>
