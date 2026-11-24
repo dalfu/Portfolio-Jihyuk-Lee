@@ -312,7 +312,7 @@ body.on-start .choice:last-child { --k: #000000; }
 </head>
 <body>
 <div class="wrap">
-  <div class="topbar"><button type="button" id="home-btn" class="topbtn" aria-label="Go to the title page" hidden>⌂ Home</button><span class="topbar-slot"><a id="lang-switch" href="ko.html">Korean</a></span></div>
+  <div class="topbar"><button type="button" id="home-btn" class="topbtn" aria-label="Go to the title page" hidden>⌂ Home</button><span class="topbar-slot"></span></div>
   <nav class="path" aria-label="Media path of the journey">
     <div class="stop" data-m="novel" data-k="short"><div class="bar"></div><div class="lab">Novel · Short Story</div></div>
     <div class="stop" data-m="novel" data-k="long"><div class="bar"></div><div class="lab">Novel · Novella</div></div>
@@ -738,26 +738,6 @@ document.getElementById("viewer-close").addEventListener("click", closeViewer);
 viewer.addEventListener("click", (e) => { if (e.target === viewer) closeViewer(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !viewer.hidden) closeViewer(); });
 
-const LANG_KEY = "drcha-journey-state";
-const langSwitch = document.getElementById("lang-switch");
-if (langSwitch) {
-  langSwitch.addEventListener("click", () => {
-    try { sessionStorage.setItem(LANG_KEY, JSON.stringify({ current, trail, seen: [...seen], noNext: curNoNext })); } catch (err) {}
-  });
-}
-function restoreState() {
-  try {
-    const raw = sessionStorage.getItem(LANG_KEY);
-    if (!raw) return false;
-    sessionStorage.removeItem(LANG_KEY);
-    const st = JSON.parse(raw);
-    if (!st || !S[st.current]) return false;
-    trail = (st.trail || []).filter((k) => S[k]);
-    (st.seen || []).forEach((k) => seen.add(k));
-    render(st.current, false, st.noNext);
-    return true;
-  } catch (err) { return false; }
-}
 scene.addEventListener("keydown", (e) => {
   if (e.key !== "Enter" && e.key !== " ") return;
   const g = e.target.closest("g[data-go]");
@@ -765,7 +745,7 @@ scene.addEventListener("keydown", (e) => {
   e.preventDefault();
   render(g.dataset.go, true);
 });
-if (!restoreState()) render("cover", false);
+render("cover", false);
 </script>
 <script>
 document.addEventListener('contextmenu', e => e.preventDefault());
